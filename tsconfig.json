@@ -4,7 +4,8 @@
     "module": "esnext",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "alwaysStrict": true
+    "alwaysStrict": true,
+    "jsx": "react"
   },
   "exclude": ["node_modules"]
 }

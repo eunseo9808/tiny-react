@@ -40,7 +40,6 @@ module.exports = {
         }),
     ],
     devServer: {
-        // host: "localhost",
         static: './build',
         port: 3000,
     },
