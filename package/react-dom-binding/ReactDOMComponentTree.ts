@@ -1,5 +1,6 @@
-import { Fiber } from '../react-reconciler/ReactInternalTypes'
-import { Container } from './ReactDomRoot'
+import {Fiber} from '../react-reconciler/ReactInternalTypes'
+import {Container} from "./shared/ContainerType";
+
 
 const randomKey = Math.random().toString(36).slice(2)
 

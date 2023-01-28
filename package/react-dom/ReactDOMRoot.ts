@@ -5,17 +5,9 @@ import {FiberRoot} from '../react-reconciler/ReactInternalTypes'
 import {markContainerAsRoot} from '../react-dom-binding/ReactDOMComponentTree'
 import {COMMENT_NODE} from '../react-dom-binding/shared/HTMLNodeType'
 import {ReactElement} from "../shared/ReactTypes";
+import {Container} from "../react-dom-binding/shared/ContainerType";
+
 // import { listenToAllSupportedEvents } from './events/DOMPluginEventSystem'
-
-export type Container =
-    | (Element & { _reactRootContainer?: RootType })
-    | (Document & { _reactRootContainer?: RootType })
-
-export type RootType = {
-    render(children: ReactElement): void
-    unmount(): void
-    _internalRoot: FiberRoot
-}
 
 class ReactDOMRoot {
     _internalRoot: FiberRoot
@@ -33,7 +25,7 @@ class ReactDOMRoot {
     }
 }
 
-export const createRoot = (container: Container) => {
+export const createRoot = (container: Container): ReactDOMRoot => {
     return new ReactDOMRoot(container)
 }
 

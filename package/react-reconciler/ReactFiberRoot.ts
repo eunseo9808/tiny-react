@@ -2,6 +2,7 @@ import {FiberRoot} from "./ReactInternalTypes";
 import {createHostRootFiber} from "./ReactFiber";
 import {NoLanes} from "./ReactFiberLane";
 import {initializeUpdateQueue} from "./ReactUpdateQueue";
+import {Container} from "../react-dom-binding/shared/ContainerType";
 
 class FiberRootNode {
     callbackNode = null
@@ -9,7 +10,7 @@ class FiberRootNode {
     finishedWork = null
     current = null as any
 
-    constructor(public containerInfo: any) {
+    constructor(public containerInfo: Container) {
     }
 }
 

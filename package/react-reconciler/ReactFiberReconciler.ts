@@ -1,8 +1,8 @@
-import {Container} from '../react-dom/ReactDomRoot'
 import {createFiberRoot} from './ReactFiberRoot'
 import {Fiber, FiberRoot} from './ReactInternalTypes'
 import {createUpdate, enqueueUpdate} from "./ReactUpdateQueue";
 import {ReactElement} from "../shared/ReactTypes";
+import {Container} from "../react-dom-binding/shared/ContainerType";
 // import { discreteUpdates, batchedEventUpdates } from './ReactFiberWorkLoop'
 
 export const createContainer = (
@@ -19,7 +19,7 @@ export const updateContainer = (
     // const lane = requestUpdateLane(current)
     const update = createUpdate()
 
-    update.payload = { element }
+    update.payload = {element}
     enqueueUpdate(current, update)
 
     // scheduleWork(current, lane)
