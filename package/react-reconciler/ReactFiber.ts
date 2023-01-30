@@ -62,6 +62,7 @@ export const createWorkInProgress = (
             current.key
         )
 
+        workInProgress.elementType = current.elementType
         workInProgress.type = current.type
         workInProgress.stateNode = current.stateNode
 
