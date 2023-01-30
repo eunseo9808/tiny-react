@@ -1,0 +1,785 @@
+import {
+    commitUpdate,
+    removeChild,
+    resetTextContent,
+    UpdatePayload,
+} from '../react-dom-binding/ReactDOMHostConfig'
+import { Container } from '../react-dom-binding/shared/ContainerType'
+import {
+    BeforeMutationMask,
+    ChildDeletion,
+    ContentReset,
+    MutationMask,
+    NoFlags,
+    PassiveMask,
+    Placement,
+    Update,
+    Passive,
+    PlacementAndUpdate
+} from './ReactFiberFlags'
+import { FunctionComponentUpdateQueue } from './ReactFiberHooks'
+import {
+    appendChild,
+    appendChildToContainer,
+    commitTextUpdate,
+    insertBefore,
+    insertInContainerBefore,
+} from './ReactFiberHostConfig'
+import {
+    HookFlags,
+    HasEffect as HookHasEffect,
+    Passive as HookPassive,
+    NoFlags as NoHookEffect,
+} from './ReactHookEffectTags'
+import { Fiber, FiberRoot } from './ReactInternalTypes'
+import {
+    Fragment,
+    FunctionComponent,
+    HostComponent,
+    HostRoot,
+    HostText,
+} from './ReactWorkTags'
+
+let nextEffect: Fiber | null = null
+
+const ensureCorrectReturnPointer = (
+    fiber: Fiber,
+    expectedReturnFiber: Fiber
+): void => {
+    fiber.return = expectedReturnFiber
+}
+
+const commitBeforeMutationEffects_begin = () => {
+    while (nextEffect !== null) {
+        const fiber = nextEffect
+        const child = fiber.child
+
+        if (
+            (fiber.subtreeFlags & BeforeMutationMask) !== NoFlags &&
+            child !== null
+        ) {
+            ensureCorrectReturnPointer(child, fiber)
+            nextEffect = child
+        } else {
+            commitBeforeMutationEffects_complete()
+        }
+    }
+}
+const commitBeforeMutationEffects_complete = () => {
+    while (nextEffect !== null) {
+        const fiber = nextEffect
+
+        commitBeforeMutationEffectsOnFiber(fiber)
+
+        const sibling = fiber.sibling
+
+        if (sibling !== null) {
+            nextEffect = sibling
+            return
+        }
+
+        nextEffect = fiber.return
+    }
+}
+
+export const commitPassiveUnmountEffects = (firstChild: Fiber): void => {
+    nextEffect = firstChild
+    commitPassiveUnmountEffects_begin()
+}
+
+const commitPassiveUnmountInsideDeletedTreeOnFiber = (
+    current: Fiber,
+    nearestMountedAncestor: Fiber | null
+): void => {
+    switch (current.tag) {
+        case FunctionComponent:
+            commitHookEffectListUnmount(HookPassive, current)
+            break
+        default:
+            break
+    }
+}
+
+const detachFiberAfterEffects = (fiber: Fiber) => {
+    const alternate = fiber.alternate
+    if (alternate !== null) {
+        fiber.alternate = null
+        detachFiberAfterEffects(alternate)
+    }
+
+    fiber.child = null
+    fiber.deletions = null
+    fiber.memoizedProps = null
+    fiber.memoizedState = null
+    fiber.pendingProps = null
+    fiber.sibling = null
+    fiber.stateNode = null
+    fiber.updateQueue = null
+}
+
+const commitPassiveUnmountEffectsInsideOfDeletedTree_complete = (
+    deletedSubtreeRoot: Fiber
+) => {
+    while (nextEffect !== null) {
+        const fiber = nextEffect
+        const sibling = fiber.sibling
+        const returnFiber = fiber.return
+
+        if (fiber === deletedSubtreeRoot) {
+            detachFiberAfterEffects(fiber)
+            nextEffect = null
+            return
+        }
+
+        if (sibling !== null) {
+            ensureCorrectReturnPointer(sibling, returnFiber!)
+            nextEffect = sibling
+            return
+        }
+
+        nextEffect = returnFiber
+    }
+}
+
+const commitPassiveUnmountEffectsInsideOfDeletedTree_begin = (
+    deletedSubtreeRoot: Fiber,
+    nearestMountedAncestor: Fiber | null
+) => {
+    while (nextEffect !== null) {
+        const fiber = nextEffect
+        commitPassiveUnmountInsideDeletedTreeOnFiber(fiber, nearestMountedAncestor)
+
+        const child = fiber.child
+        if (child !== null) {
+            ensureCorrectReturnPointer(child, fiber)
+            nextEffect = child
+        } else {
+            commitPassiveUnmountEffectsInsideOfDeletedTree_complete(
+                deletedSubtreeRoot
+            )
+        }
+    }
+}
+
+const commitPassiveUnmountEffects_begin = () => {
+    while (nextEffect !== null) {
+        const fiber = nextEffect
+        const child = fiber.child
+
+        if ((nextEffect.flags & ChildDeletion) !== NoFlags) {
+            const deletions = fiber.deletions
+            if (deletions !== null) {
+                for (let i = 0; i < deletions.length; ++i) {
+                    const fiberToDelete = deletions[i]
+                    nextEffect = fiberToDelete
+                    commitPassiveUnmountEffectsInsideOfDeletedTree_begin(
+                        fiberToDelete,
+                        fiber
+                    )
+                }
+                const previousFiber = fiber.alternate
+
+                if (previousFiber !== null) {
+                    let detachedChild = previousFiber.child
+                    if (detachedChild !== null) {
+                        previousFiber.child = null
+                        do {
+                            const detachedSibling: Fiber | null = detachedChild.sibling
+                            detachedChild.sibling = null
+                            detachedChild = detachedSibling
+                        } while (detachedChild !== null)
+                    }
+                }
+
+                nextEffect = fiber
+            }
+
+            if ((fiber.subtreeFlags & PassiveMask) !== NoFlags && child !== null) {
+                ensureCorrectReturnPointer(child, fiber)
+                nextEffect = child
+            } else {
+                commitPassiveUnmountEffects_complete()
+            }
+        }
+
+        if ((fiber.subtreeFlags & PassiveMask) !== NoFlags && child !== null) {
+            ensureCorrectReturnPointer(child, fiber)
+            nextEffect = child
+        } else {
+            commitPassiveUnmountEffects_complete()
+        }
+    }
+}
+
+const commitPassiveUnmountEffects_complete = () => {
+    while (nextEffect !== null) {
+        const fiber = nextEffect
+        if ((fiber.flags & Passive) !== NoFlags) {
+            commitPassiveUnmountOnFiber(fiber)
+        }
+
+        const sibling = fiber.sibling
+        if (sibling !== null) {
+            ensureCorrectReturnPointer(sibling, fiber.return!)
+            nextEffect = sibling
+            return
+        }
+
+        nextEffect = fiber.return
+    }
+}
+
+const commitHookEffectListUnmount = (flags: HookFlags, finishedWork: Fiber) => {
+    const updateQueue: FunctionComponentUpdateQueue | null =
+        finishedWork.updateQueue as any
+
+    const lastEffect = updateQueue !== null ? updateQueue.lastEffect : null
+
+    if (lastEffect !== null) {
+        const firstEffect = lastEffect.next
+        let effect = firstEffect
+        do {
+            if ((effect.tag & flags) === flags) {
+                const destroy = effect.destroy
+                effect.destroy = undefined
+                if (destroy !== undefined) {
+                    destroy()
+                }
+            }
+
+            effect = effect.next
+        } while (effect !== firstEffect)
+    }
+}
+
+const commitPassiveUnmountOnFiber = (finishedWork: Fiber): void => {
+    switch (finishedWork.tag) {
+        case FunctionComponent:
+            commitHookEffectListUnmount(HookHasEffect | HookPassive, finishedWork)
+            break
+        default: {
+            console.log('commitPassiveUnmountOnFiber')
+            throw new Error('Not Implement')
+        }
+    }
+}
+
+const commitHookEffectListMount = (tag: number, finishedWork: Fiber): void => {
+    const updateQueue: FunctionComponentUpdateQueue | null =
+        finishedWork.updateQueue as any
+    const lastEffect = updateQueue !== null ? updateQueue.lastEffect : null
+    if (lastEffect !== null) {
+        const firstEffect = lastEffect.next
+
+        let effect = firstEffect
+
+        do {
+            if ((effect.tag & tag) === tag) {
+                const create = effect.create
+                effect.destroy = create()
+            }
+
+            effect = effect.next
+        } while (effect !== firstEffect)
+    }
+}
+
+const commitPassiveMountOnFiber = (
+    finishedRoot: FiberRoot,
+    finishedWork: Fiber
+): void => {
+    switch (finishedWork.tag) {
+        case FunctionComponent:
+            commitHookEffectListMount(HookPassive | HookHasEffect, finishedWork)
+            break
+        default: {
+            console.log('commitPassiveMountOnFiber')
+            throw new Error('Not Implement')
+        }
+    }
+}
+
+const commitPassiveMountEffects_complete = (
+    subtreeRoot: Fiber,
+    root: FiberRoot
+) => {
+    while (nextEffect !== null) {
+        const fiber = nextEffect
+
+        if ((fiber.flags & Passive) !== NoFlags) {
+            commitPassiveMountOnFiber(root, fiber)
+        }
+
+        if (fiber === subtreeRoot) {
+            nextEffect = null
+            return
+        }
+
+        const sibling = fiber.sibling
+        if (sibling !== null) {
+            ensureCorrectReturnPointer(sibling, fiber.return!)
+            nextEffect = sibling
+            return
+        }
+
+        nextEffect = fiber.return
+    }
+}
+
+const commitPassiveMountEffects_begin = (
+    subtreeRoot: Fiber,
+    root: FiberRoot
+): void => {
+    while (nextEffect !== null) {
+        const fiber = nextEffect
+        const firstChild = fiber.child
+
+        if ((fiber.subtreeFlags & PassiveMask) !== NoFlags && firstChild !== null) {
+            ensureCorrectReturnPointer(firstChild, fiber)
+            nextEffect = firstChild
+        } else {
+            commitPassiveMountEffects_complete(subtreeRoot, root)
+        }
+    }
+}
+
+export const commitPassiveMountEffects = (
+    root: FiberRoot,
+    finishedWork: Fiber
+): void => {
+    nextEffect = finishedWork
+    commitPassiveMountEffects_begin(finishedWork, root)
+}
+
+const commitBeforeMutationEffectsOnFiber = (finishedWork: Fiber): void => {
+    const current = finishedWork.alternate
+    const flags = finishedWork.flags
+
+    //todo Snapshot
+}
+
+export const commitBeforeMutationEffects = (
+    root: FiberRoot,
+    firstChild: Fiber
+): void => {
+    nextEffect = firstChild
+
+    commitBeforeMutationEffects_begin()
+}
+
+export const commitMutationEffects = (
+    root: FiberRoot,
+    firstChild: Fiber
+): void => {
+    nextEffect = firstChild
+
+    commitMutationEffects_begin(root)
+}
+
+const commitUnmount = (
+    finishedRoot: FiberRoot,
+    current: Fiber,
+    nearestMountedAncestor: Fiber
+): void => {
+    switch (current.tag) {
+        case FunctionComponent: {
+            return
+        }
+        case HostComponent: {
+            return
+        }
+        case HostText: {
+            break
+        }
+        case Fragment: {
+            break
+        }
+        default:
+            console.log('commitUnmount')
+            throw new Error('Not Implement')
+    }
+}
+
+const commitNestedUnmounts = (
+    finishedRoot: FiberRoot,
+    root: Fiber,
+    nearestMountedAncestor: Fiber
+) => {
+    let node: Fiber = root
+
+    while (true) {
+        commitUnmount(finishedRoot, node, nearestMountedAncestor)
+
+        if (node.child !== null) {
+            node.child.return = node
+            node = node.child
+            continue
+        }
+
+        if (node === root) return
+
+        while (node.sibling === null) {
+            if (node.return === null || node.return === root) {
+                return
+            }
+
+            node = node.return
+        }
+
+        node.sibling.return = node.return
+        node = node.sibling
+    }
+}
+
+const unmountHostComponents = (
+    finishedRoot: FiberRoot,
+    current: Fiber,
+    nearestMountedAncestor: Fiber
+): void => {
+
+}
+
+const detachFiberMutation = (fiber: Fiber) => {
+    const alternate = fiber.alternate
+    if (alternate !== null) {
+        alternate.return = null
+    }
+    fiber.return = null
+}
+
+const commitDeletion = (
+    finishedRoot: FiberRoot,
+    current: Fiber,
+    nearestMountedAncestor: Fiber
+): void => {
+    let node: Fiber = current
+
+    let currentParentIsValid = false
+
+    let currentParent
+    let currentParentIsContainer
+
+    while (true) {
+        if (!currentParentIsValid) {
+            let parent = node.return
+
+            findParent: while (true) {
+                const parentStateNode = parent?.stateNode
+                switch (parent?.tag) {
+                    case HostComponent:
+                        currentParent = parentStateNode
+                        currentParentIsContainer = false
+                        break findParent
+                    case HostRoot:
+                        currentParent = parentStateNode.containerInfo
+                        currentParentIsContainer = true
+                        break findParent
+                }
+                parent = parent!.return
+            }
+
+            currentParentIsValid = true
+        }
+
+        if (node.tag === HostComponent || node.tag === HostText) {
+            commitNestedUnmounts(finishedRoot, node, nearestMountedAncestor)
+            removeChild(currentParent, node.stateNode)
+
+        } else {
+            commitUnmount(finishedRoot, node, nearestMountedAncestor)
+            if (node.child !== null) {
+                node.child.return = node
+                node = node.child
+                continue
+            }
+        }
+
+        if (node === current) return
+
+        while (node.sibling === null) {
+            if (node.return === null || node.return === current) return
+
+            node = node.return
+        }
+        node.sibling.return = node.return
+        node = node.sibling
+    }
+
+    detachFiberMutation(current)
+}
+
+const isHostParent = (fiber: Fiber): boolean => {
+    return fiber.tag === HostComponent || fiber.tag === HostRoot
+}
+
+const getHostParentFiber = (fiber: Fiber): Fiber => {
+    let parent = fiber.return
+
+    while (parent !== null) {
+        if (isHostParent(parent)) {
+            return parent
+        }
+
+        parent = parent.return
+    }
+
+    throw new Error('Expected to find a host parent')
+}
+
+const getHostSibling = (fiber: Fiber): Element | null => {
+    let node: Fiber = fiber
+
+    siblings: while (true) {
+        while (node.sibling === null) {
+            if (node.return === null || isHostParent(node.return)) return null
+            node = node.return
+        }
+
+        node.sibling.return = node.return
+        node = node.sibling
+
+        while (node.tag !== HostComponent) {
+            if (node.flags & Placement) {
+                continue siblings
+            }
+
+            if (node.child === null) {
+                continue siblings
+            } else {
+                node.child.return = node
+                node = node.child
+            }
+        }
+
+        if (!(node.flags & Placement)) {
+            return node.stateNode
+        }
+    }
+}
+
+const insertOrAppendPlacementNode = (
+    node: Fiber,
+    before: Element | null,
+    parent: Element
+): void => {
+    const { tag } = node
+
+    const isHost = tag === HostComponent || tag === HostText
+
+    if (isHost) {
+        const stateNode = isHost ? node.stateNode : node.stateNode.instance
+        if (before) {
+            insertBefore(parent, stateNode, before)
+        } else {
+            appendChild(parent, stateNode)
+        }
+    } else {
+        const child = node.child
+        if (child !== null) {
+            insertOrAppendPlacementNode(child, before, parent)
+
+            let sibling = child.sibling
+
+            while (sibling !== null) {
+                insertOrAppendPlacementNode(sibling, before, parent)
+                sibling = sibling.sibling
+            }
+        }
+    }
+}
+
+const insertOrAppendPlacementNodeIntoContainer = (
+    node: Fiber,
+    before: Element | null,
+    parent: Container
+): void => {
+    const { tag } = node
+    const isHost = tag === HostComponent || tag === HostText
+
+    if (isHost) {
+        const stateNode = node.stateNode
+
+        if (before) {
+            insertInContainerBefore(parent, stateNode, before)
+        } else {
+            appendChildToContainer(parent, stateNode)
+        }
+    } else {
+        const child = node.child
+
+        if (child !== null) {
+            insertOrAppendPlacementNodeIntoContainer(child, before, parent)
+            let sibling = child.sibling
+            while (sibling !== null) {
+                insertOrAppendPlacementNodeIntoContainer(sibling, before, parent)
+                sibling = sibling.sibling
+            }
+        }
+    }
+}
+
+const commitPlacement = (finishedWork: Fiber): void => {
+    const parentFiber = getHostParentFiber(finishedWork)
+
+    let parent
+    let isContainer
+
+    const parentStateNode = parentFiber.stateNode
+
+    switch (parentFiber.tag) {
+        case HostComponent:
+            parent = parentStateNode
+            isContainer = false
+            break
+
+        case HostRoot:
+            parent = parentStateNode.containerInfo
+            isContainer = true
+            break
+        default: {
+            throw new Error('Invalid host parent fiber')
+        }
+    }
+
+    if (parentFiber.flags & ContentReset) {
+        resetTextContent(parent)
+        parentFiber.flags &= ~ContentReset
+    }
+
+    const before = getHostSibling(finishedWork)
+
+    if (isContainer) {
+        insertOrAppendPlacementNodeIntoContainer(finishedWork, before, parent)
+    } else {
+        insertOrAppendPlacementNode(finishedWork, before, parent)
+    }
+}
+
+const commitWork = (current: Fiber | null, finishedWork: Fiber): void => {
+    switch (finishedWork.tag) {
+        case FunctionComponent:
+            commitHookEffectListUnmount(HookHasEffect, finishedWork)
+            return
+        case HostComponent: {
+            const instance: Element = finishedWork.stateNode
+
+            if (instance) {
+                const newProps = finishedWork.memoizedProps
+                const oldProps = current !== null ? current.memoizedProps : newProps
+                const type = finishedWork.type
+
+                const updatePayload: null | UpdatePayload =
+                    finishedWork.updateQueue as any
+
+                finishedWork.updateQueue = null
+
+                if (updatePayload !== null) {
+                    commitUpdate(
+                        instance,
+                        updatePayload,
+                        type,
+                        oldProps,
+                        newProps,
+                        finishedWork
+                    )
+                }
+            }
+        }
+        case HostText: {
+            const textInstance: Text = finishedWork.stateNode
+            const newText = finishedWork.memoizedProps
+
+            const oldText = current !== null ? current.memoizedProps : newText
+
+            commitTextUpdate(textInstance, oldText, newText)
+            return
+        }
+        default: {
+            console.log('commitWork')
+            throw new Error('Not Implement')
+        }
+    }
+}
+
+const commitMutationEffectsOnFiber = (
+    finishedWork: Fiber,
+    root: FiberRoot
+): void => {
+    const flags = finishedWork.flags
+
+    if (flags & ContentReset) {
+        //todo
+        console.log('commitMutationEffectsOnFiber')
+        throw new Error('Not Implement')
+    }
+
+    const primaryFlags = flags & (Placement | Update)
+
+    switch (primaryFlags) {
+        case Placement: {
+            commitPlacement(finishedWork)
+            finishedWork.flags &= ~Placement
+            break
+        }
+        case 0: {
+            break
+        }
+        case PlacementAndUpdate: {
+            commitPlacement(finishedWork)
+            finishedWork.flags &= ~Placement
+            const current = finishedWork.alternate
+            commitWork(current, finishedWork)
+            break
+        }
+        case Update: {
+            const current = finishedWork.alternate
+            commitWork(current, finishedWork)
+            break
+        }
+        default: {
+            console.log('commitMutationEffectsOnFiber')
+            throw new Error('Not Implement')
+        }
+    }
+}
+
+const commitMutationEffects_complete = (root: FiberRoot) => {
+    while (nextEffect !== null) {
+        const fiber = nextEffect
+
+        commitMutationEffectsOnFiber(fiber, root)
+
+        const sibling = fiber.sibling
+        if (sibling !== null) {
+            ensureCorrectReturnPointer(sibling, fiber.return!)
+            nextEffect = sibling
+            return
+        }
+
+        nextEffect = fiber.return
+    }
+}
+
+const commitMutationEffects_begin = (root: FiberRoot): void => {
+    while (nextEffect !== null) {
+        const fiber = nextEffect
+
+        const deletions = fiber.deletions
+        if (deletions !== null) {
+            for (let i = 0; i < deletions.length; ++i) {
+                const childToDelete = deletions[i]
+
+                commitDeletion(root, childToDelete, fiber)
+            }
+        }
+
+        const child = fiber.child
+
+        if ((fiber.subtreeFlags & MutationMask) !== NoFlags && child !== null) {
+            ensureCorrectReturnPointer(child, fiber)
+            nextEffect = child
+        } else {
+            commitMutationEffects_complete(root)
+        }
+    }
+}

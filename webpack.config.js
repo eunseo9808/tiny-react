@@ -3,7 +3,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
     name: 'tiny-react-webpack-setting',
-    entry: "./src/index.ts",
+    entry: "./src/index.tsx",
     output: {
         path: path.join(__dirname, "build"),
         filename: "index.js",

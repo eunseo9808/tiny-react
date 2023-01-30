@@ -21,6 +21,8 @@ export type Props = {
     top?: null | number
 }
 
+export type UpdatePayload = unknown[]
+
 export const shouldSetTextContent = (type: string, props: Props): boolean => {
     return (
         type === 'textarea' ||

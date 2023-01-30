@@ -1,5 +1,5 @@
 import { createRoot } from "./ReactDOMRoot";
 
-export {
+export default {
     createRoot
 }

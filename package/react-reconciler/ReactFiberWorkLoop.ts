@@ -76,8 +76,7 @@ const performUnitOfWork = (unitOfWork: Fiber): void => {
 
     let next: Fiber | null = null
 
-    next = beginWork(current, unitOfWork, subtreeRenderLanes)
-
+    next = beginWork(current, unitOfWork)
     unitOfWork.memoizedProps = unitOfWork.pendingProps
     if (next === null) {
         completeUnitOfWork(unitOfWork)
@@ -165,13 +164,7 @@ const commitRootImpl = (root: FiberRoot): null => {
     ) {
         if (!rootDoesHavePassiveEffects) {
             rootDoesHavePassiveEffects = true
-            scheduleCallback(
-                () => {
-                    flushPassiveEffects()
-                    return null
-                },
-                null
-            )
+            setTimeout(() => flushPassiveEffects(), 0)
         }
     }
 
@@ -196,8 +189,6 @@ const commitRootImpl = (root: FiberRoot): null => {
         rootWithPendingPassiveEffects = root
     }
 
-    ensureRootIsScheduled(root)
-
     return null
 }
 
@@ -208,10 +199,9 @@ const commitRoot = (root: FiberRoot): null => {
 
 export const performSyncWorkOnRoot = (root: FiberRoot) => {
     const lanes = root.pendingLanes
-
     if (lanes !== SyncLane) return null
 
-    const exitStatus = renderRootSync(root, lanes)
+    renderRootSync(root, lanes)
 
     const finishedWork: Fiber | null = root.current.alternate
 
@@ -222,36 +212,45 @@ export const performSyncWorkOnRoot = (root: FiberRoot) => {
     return null
 }
 
+const markUpdateLaneFromFiberToRoot = (
+    sourceFiber: Fiber,
+    lane: Lane
+): FiberRoot | null => {
+    sourceFiber.lanes = sourceFiber.lanes | lane
+    let alternate = sourceFiber.alternate
 
-const ensureRootIsScheduled = (root: FiberRoot) => {
-    const existingCallbackNode = root.callbackNode
-
-    const nextLanes = workInProgressRootRenderLanes
-
-    if (nextLanes === NoLanes) {
-        if (existingCallbackNode !== null) {
-            throw new Error('Not Implement')
-        }
-        root.callbackNode = null
-        return
+    if (alternate !== null) {
+        alternate.lanes = sourceFiber.lanes | lane
     }
 
-    scheduleSyncCallback(performSyncWorkOnRoot.bind(null, root))
-    scheduleMicrotask(flushSyncCallbacks)
-}
+    let node = sourceFiber
+    let parent = sourceFiber.return
 
+    while (parent !== null) {
+        parent.childLanes = sourceFiber.lanes | lane
+        alternate = parent.alternate
 
-export const requestEventTime = () => {
-    if ((executionContext & (RenderContext | CommitContext)) !== NoContext) {
-        throw new Error('Not Implement')
+        if (alternate !== null) {
+            alternate.childLanes = sourceFiber.lanes | lane
+        }
+
+        node = parent
+        parent = node.return
+    }
+
+    if (node.tag === HostRoot) {
+        const root: FiberRoot = node.stateNode
+        return root
+    } else {
+        return null
     }
 }
 
 export const scheduleUpdateOnFiber = (
-    root: FiberRoot,
     fiber: Fiber,
     lane: Lane
 ): FiberRoot | null => {
+    const root = markUpdateLaneFromFiberToRoot(fiber, lane)
 
     if (root === null) {
         return null
@@ -259,29 +258,8 @@ export const scheduleUpdateOnFiber = (
 
     markRootUpdated(root, lane)
 
-    if (root === workInProgressRoot) {
-        // throw new Error('Not Implement')
-    }
-
-    if (lane === SyncLane) {
-        if (
-            (executionContext & LegacyUnbatchedContext) !== NoContext &&
-            (executionContext & (RenderContext | CommitContext)) === NoContext
-        ) {
-            performSyncWorkOnRoot(root)
-        } else {
-            ensureRootIsScheduled(root)
-
-            if (
-                executionContext === NoContext
-            ) {
-                throw new Error('Not Implement')
-            }
-        }
-    } else {
-        ensureRootIsScheduled(root)
-    }
-
+    scheduleSyncCallback(performSyncWorkOnRoot.bind(null, root))
+    setTimeout(() => flushSyncCallbacks(), 0)
     return root
 }
 

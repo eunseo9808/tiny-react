@@ -3,6 +3,8 @@ import {Fiber, FiberRoot} from './ReactInternalTypes'
 import {createUpdate, enqueueUpdate} from "./ReactUpdateQueue";
 import {ReactElement} from "../shared/ReactTypes";
 import {Container} from "../react-dom-binding/shared/ContainerType";
+import {scheduleUpdateOnFiber} from "./ReactFiberWorkLoop";
+import {SyncLane} from "./ReactFiberLane";
 // import { discreteUpdates, batchedEventUpdates } from './ReactFiberWorkLoop'
 
 export const createContainer = (
@@ -22,7 +24,7 @@ export const updateContainer = (
     update.payload = {element}
     enqueueUpdate(current, update)
 
-    // scheduleWork(current, lane)
+    scheduleUpdateOnFiber(current, SyncLane)
 }
 
 

@@ -1,11 +1,11 @@
-import {ReactElement} from '../shared/ReactTypes'
+import {ReactElement, ReactFragment} from '../shared/ReactTypes'
 import {Fiber} from './ReactInternalTypes'
 import {
     WorkTag,
     HostRoot,
     HostComponent,
     HostText,
-    FunctionComponent,
+    FunctionComponent, Fragment,
 } from './ReactWorkTags'
 import {Flags, NoFlags} from './ReactFiberFlags'
 import {Lanes, NoLanes} from "./ReactFiberLane";
@@ -26,6 +26,7 @@ class FiberNode {
     index: number = 0
     lanes = NoLanes
     childLanes = NoLanes
+    elementType = null
 
     constructor(
         public tag: WorkTag,
@@ -72,6 +73,7 @@ export const createWorkInProgress = (
         workInProgress.flags = NoFlags
         workInProgress.subtreeFlags = NoFlags
         workInProgress.deletions = null
+
     }
 
     workInProgress.lanes = current.lanes
@@ -88,8 +90,7 @@ export const createWorkInProgress = (
 export const createFiberFromTypeAndProps = (
     type: any,
     key: null | string,
-    pendingProps: any,
-    lanes: Lanes
+    pendingProps: any
 ) => {
     let fiberTag: WorkTag = FunctionComponent
 
@@ -100,13 +101,11 @@ export const createFiberFromTypeAndProps = (
 
     const fiber = createFiber(fiberTag, pendingProps, key)
     fiber.type = type
-    fiber.lanes = lanes
     return fiber
 }
 
 export const createFiberFromElement = (
     element: ReactElement,
-    lanes: Lanes
 ): Fiber => {
     const type = element.type
     const key = element.key as any
@@ -116,7 +115,6 @@ export const createFiberFromElement = (
         type,
         key,
         pendingProps,
-        lanes
     )
 
     return fiber
@@ -124,9 +122,16 @@ export const createFiberFromElement = (
 
 export const createFiberFromText = (
     content: string,
-    lanes: Lanes
 ): Fiber => {
     const fiber = createFiber(HostText, content, null)
-    fiber.lanes = lanes
     return fiber
+}
+
+
+export function createFiberFromFragment(
+    elements: ReactFragment,
+    key: null | string,
+): Fiber {
+    const fiber = createFiber(Fragment, elements, key);
+    return fiber;
 }

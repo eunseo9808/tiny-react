@@ -29,6 +29,7 @@ export type Fiber = {
     type: any
     lanes: Lanes
     childLanes: Lanes
+    elementType: any
 }
 
 type Dispatch<A> = (a: A) => void
