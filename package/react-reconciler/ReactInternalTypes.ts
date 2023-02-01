@@ -6,7 +6,6 @@ export type FiberRoot = {
     finishedWork: Fiber | null
     current: Fiber
     containerInfo: any
-    callbackNode: unknown
     pendingLanes: Lanes
 }
 

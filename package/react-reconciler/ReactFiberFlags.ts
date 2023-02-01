@@ -11,14 +11,12 @@ export const ContentReset = /*                 */ 0b00000000000000000100000
 export const Passive = /*                      */ 0b00000000000010000000000
 
 export const MutationMask = Placement | Update | ChildDeletion | ContentReset
-export const LayoutMask = Update
 
 export const BeforeMutationMask = Update
 
 export const PassiveMask = Passive | ChildDeletion
 
 export const RefStatic = /*                    */ 0b00001000000000000000000
-export const LayoutStatic = /*                 */ 0b00010000000000000000000
 export const PassiveStatic = /*                */ 0b00100000000000000000000
 
-export const StaticMask = LayoutStatic | PassiveStatic | RefStatic
+export const StaticMask = PassiveStatic | RefStatic

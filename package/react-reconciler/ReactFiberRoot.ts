@@ -1,11 +1,9 @@
 import {FiberRoot} from "./ReactInternalTypes";
 import {createHostRootFiber} from "./ReactFiber";
 import {NoLanes} from "./ReactFiberLane";
-import {initializeUpdateQueue} from "./ReactUpdateQueue";
 import {Container} from "../react-dom-binding/shared/ContainerType";
 
 class FiberRootNode {
-    callbackNode = null
     pendingLanes = NoLanes
     finishedWork = null
     current = null as any
@@ -22,8 +20,6 @@ export const createFiberRoot = (
     const uninitializedFiber = createHostRootFiber()
     root.current = uninitializedFiber
     uninitializedFiber.stateNode = root
-
-    initializeUpdateQueue(uninitializedFiber)
 
     return root
 }

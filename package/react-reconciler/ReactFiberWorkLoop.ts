@@ -152,7 +152,6 @@ const commitRootImpl = (root: FiberRoot): null => {
 
     root.finishedWork = null
 
-    root.callbackNode = null
     markRootFinished(root)
 
     workInProgressRoot = null

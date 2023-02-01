@@ -1,6 +1,5 @@
 import {createFiberRoot} from './ReactFiberRoot'
 import {Fiber, FiberRoot} from './ReactInternalTypes'
-import {createUpdate, enqueueUpdate} from "./ReactUpdateQueue";
 import {ReactElement} from "../shared/ReactTypes";
 import {Container} from "../react-dom-binding/shared/ContainerType";
 import {scheduleUpdateOnFiber} from "./ReactFiberWorkLoop";
@@ -18,11 +17,7 @@ export const updateContainer = (
     container: FiberRoot
 ) => {
     const current: Fiber = container.current
-    // const lane = requestUpdateLane(current)
-    const update = createUpdate()
-
-    update.payload = {element}
-    enqueueUpdate(current, update)
+    current.memoizedState = { element }
 
     scheduleUpdateOnFiber(current, SyncLane)
 }

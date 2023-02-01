@@ -1,6 +1,5 @@
 import {Fiber} from "../react-reconciler/ReactInternalTypes";
 import {Container} from "./shared/ContainerType";
-import {COMMENT_NODE} from "./shared/HTMLNodeType";
 import {diffProperties, setInitialProperties, updateProperties} from "./ReactDOMComponent";
 import setTextContent from "./setTextContent";
 
@@ -73,26 +72,14 @@ export const insertInContainerBefore = (
     child: Element,
     beforeChild: Element
 ) => {
-    if (container.nodeType === COMMENT_NODE) {
-        container.parentNode?.insertBefore(child, beforeChild)
-    } else {
-        container.insertBefore(child, beforeChild)
-    }
+    container.insertBefore(child, beforeChild)
 }
 
 export const appendChildToContainer = (
     container: Container,
     child: Element
 ): void => {
-    let parentNode
-
-    if (container.nodeType === COMMENT_NODE) {
-        parentNode = container.parentNode
-        parentNode?.insertBefore(child, container)
-    } else {
-        parentNode = container
-        parentNode.appendChild(child)
-    }
+    container.appendChild(child)
 }
 
 export const finalizeInitialChildren = (

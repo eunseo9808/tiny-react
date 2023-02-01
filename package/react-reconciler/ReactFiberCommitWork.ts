@@ -233,6 +233,7 @@ const commitHookEffectListUnmount = (flags: HookFlags, finishedWork: Fiber) => {
     const updateQueue: FunctionComponentUpdateQueue | null =
         finishedWork.updateQueue as any
 
+
     const lastEffect = updateQueue !== null ? updateQueue.lastEffect : null
 
     if (lastEffect !== null) {
@@ -709,7 +710,6 @@ const commitMutationEffectsOnFiber = (
 
     if (flags & ContentReset) {
         //todo
-        console.log('commitMutationEffectsOnFiber')
         throw new Error('Not Implement')
     }
 
@@ -737,7 +737,6 @@ const commitMutationEffectsOnFiber = (
             break
         }
         default: {
-            console.log('commitMutationEffectsOnFiber')
             throw new Error('Not Implement')
         }
     }

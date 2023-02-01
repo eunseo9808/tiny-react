@@ -6,7 +6,6 @@ import {
 } from './ReactChildFiber'
 import { bailoutHooks, renderWithHooks } from './ReactFiberHooks'
 import { Fiber } from './ReactInternalTypes'
-import { cloneUpdateQueue, processUpdateQueue } from './ReactUpdateQueue'
 import {
     Fragment,
     FunctionComponent,
@@ -66,19 +65,7 @@ const updateHostRoot = (
     current: Fiber,
     workInProgress: Fiber
 ) => {
-    cloneUpdateQueue(current, workInProgress)
-    const prevState = workInProgress.memoizedState
-    const prevChildren = prevState !== null ? prevState.element : null
-    const nextProps = workInProgress.pendingProps
-    processUpdateQueue(workInProgress, nextProps, null)
-    const nextState = workInProgress.memoizedState
-
-    const nextChildren = nextState.element
-
-    if (nextChildren === prevChildren) {
-        return bailoutOnAlreadyFinishedWork(current, workInProgress)
-    }
-
+    const nextChildren = workInProgress.memoizedState.element
     reconcileChildren(current, workInProgress, nextChildren)
 
     return workInProgress.child
