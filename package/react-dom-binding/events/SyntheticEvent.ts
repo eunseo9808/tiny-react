@@ -1,4 +1,5 @@
-import { Fiber } from '../../react-reconciler/ReactInternalTypes'
+import {Fiber} from "../../react-reconciler-oop/types/ReactInternalTypes";
+
 
 export const createSyntheticEvent = () => {
   class SyntheticBaseEvent {

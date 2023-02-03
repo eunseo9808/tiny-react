@@ -1,4 +1,3 @@
-import { Fiber } from '../../../react-reconciler/ReactInternalTypes'
 import { updateValueIfChanged } from '../../InputValueTracking'
 import { DOMEventName } from '../DOMEventNames'
 import {
@@ -9,6 +8,7 @@ import { registerTwoPhaseEvent } from '../EventRegistry'
 import { EventSystemFlags } from '../EventSystemFlags'
 import { AnyNativeEvent } from '../PluginModuleType'
 import { SyntheticEvent } from '../SyntheticEvent'
+import {Fiber} from "../../../react-reconciler-oop/types/ReactInternalTypes";
 
 const registerEvents = () => {
   registerTwoPhaseEvent('onChange', [

@@ -5,7 +5,9 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "alwaysStrict": true,
-    "jsx": "react"
+    "jsx": "react",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "exclude": ["node_modules"]
 }

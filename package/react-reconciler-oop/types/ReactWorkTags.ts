@@ -7,7 +7,6 @@ export type WorkTag =
     | 5
     | 6
     | 7
-
 export const FunctionComponent = 0
 
 export const HostRoot = 3

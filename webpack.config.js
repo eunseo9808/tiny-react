@@ -9,17 +9,13 @@ module.exports = {
         filename: "index.js",
         clean: true,
     },
+
     module: {
         rules: [
             {
-                test: /\.js/,
+                test: /\.js?/,
                 exclude: /node_modules/,
-                use: {
-                    loader: 'babel-loader',
-                    options: {
-                        presets: ['@babel/preset-env', '@babel/preset-react', "@babel/preset-typescript"]
-                    }
-                }
+                use: "babel-loader"
             },
             {
                 test: /\.tsx?$/,

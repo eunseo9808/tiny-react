@@ -1,10 +1,13 @@
-import {
-    createContainer, updateContainer
-} from '../react-reconciler/ReactFiberReconciler'
-import {FiberRoot} from '../react-reconciler/ReactInternalTypes'
+import "reflect-metadata";
 import {ReactElement} from "../shared/ReactTypes";
 import {Container} from "../react-dom-binding/shared/ContainerType";
-import { listenToAllSupportedEvents } from '../react-dom-binding/events/DOMPluginEventSystem'
+import {listenToAllSupportedEvents} from '../react-dom-binding/events/DOMPluginEventSystem'
+import {container, singleton} from "tsyringe";
+import {ContainerFactory} from "../react-reconciler-oop/ContainerFactory";
+import {ReactFiberFactory} from "../react-reconciler-oop/ReactFiberFactory";
+import {FiberRoot} from "../react-reconciler-oop/types/ReactInternalTypes";
+
+const containerFactory = container.resolve(ContainerFactory);
 
 class ReactDOMRoot {
     _internalRoot: FiberRoot
@@ -15,9 +18,8 @@ class ReactDOMRoot {
 
     render(children: ReactElement): void {
         const root = this._internalRoot
-        updateContainer(children, root)
+        containerFactory.updateContainer(children, root)
     }
-
 }
 
 export const createRoot = (container: Container): ReactDOMRoot => {
@@ -25,8 +27,7 @@ export const createRoot = (container: Container): ReactDOMRoot => {
 }
 
 const createRootImpl = (container: Container): FiberRoot => {
-    const root = createContainer(container)
+    const root = containerFactory.createContainer(container)
     listenToAllSupportedEvents(container)
     return root
 }
-

@@ -1,5 +1,5 @@
-import { Fiber } from '../../react-reconciler/ReactInternalTypes'
 import { Props } from '../ReactDOMHostConfig'
+import {Fiber} from "../../react-reconciler-oop/types/ReactInternalTypes";
 
 const randomKey = Math.random().toString(36).slice(2)
 

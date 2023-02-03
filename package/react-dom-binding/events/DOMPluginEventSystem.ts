@@ -7,15 +7,14 @@ import {
     addEventCaptureListenerWithPassiveFlag
 } from "./EventListener";
 import {AnyNativeEvent} from "./PluginModuleType";
-import {Fiber} from "../../react-reconciler/ReactInternalTypes";
-import {getEventTarget} from "./getEventTarget";
 import {ReactSyntheticEvent} from "./ReactSyntheticEventType";
 import {EventSystemFlags, IS_CAPTURE_PHASE} from "./EventSystemFlags";
 import * as SimpleEventPlugin from './plugins/SimpleEventPlugin'
 import * as ChangeEventPlugin from './plugins/ChangeEventPlugin'
 import {dispatchEvent} from './ReactDOMEventListener'
-import {HostComponent} from "../../react-reconciler/ReactWorkTags";
 import {getListener} from "./getListener";
+import {HostComponent} from "../../react-reconciler-oop/component/HostComponent";
+import {Fiber} from "../../react-reconciler-oop/types/ReactInternalTypes";
 
 SimpleEventPlugin.registerEvents()
 ChangeEventPlugin.registerEvents()
@@ -186,7 +185,7 @@ export const accumulateTwoPhaseListeners = (
     while (instance !== null) {
         const {stateNode, tag} = instance
 
-        if (tag === HostComponent && stateNode !== null) {
+        if (tag === HostComponent.tag && stateNode !== null) {
             const currentTarget = stateNode
             const captureListener = getListener(instance, captureName)
 
@@ -226,7 +225,7 @@ export const accumulateSinglePhaseListeners = (
     while (instance !== null) {
         const {tag, stateNode} = instance
 
-        if (tag === HostComponent && stateNode !== null) {
+        if (tag === HostComponent.tag && stateNode !== null) {
             lastHostComponent = stateNode
             if (reactEventName !== null) {
                 const listener = getListener(instance, reactEventName)

@@ -1,6 +1,6 @@
-import {Flags} from './ReactFiberFlags'
-import {WorkTag} from './ReactWorkTags'
+import {Flags} from "./ReactFiberFlags";
 import {Lanes} from "./ReactFiberLane";
+import {WorkTag} from "./ReactWorkTags";
 
 export type FiberRoot = {
     finishedWork: Fiber | null
@@ -29,15 +29,4 @@ export type Fiber = {
     lanes: Lanes
     childLanes: Lanes
     elementType: any
-}
-
-type Dispatch<A> = (a: A) => void
-type BasicStateAction<S> = ((a: S) => S) | S
-
-export type Dispatcher = {
-    useState<S>(initialState: (() => S) | S): [S, Dispatch<BasicStateAction<S>>]
-    useEffect(
-        create: () => (() => void) | void,
-        deps: unknown[] | void | null
-    ): void
 }

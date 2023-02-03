@@ -1,6 +1,6 @@
-import { Fiber } from '../../react-reconciler/ReactInternalTypes'
 import { Props } from '../ReactDOMHostConfig'
 import { getFiberCurrentPropsFromNode } from './ReactDOMComponentTree'
+import {Fiber} from "../../react-reconciler-oop/types/ReactInternalTypes";
 
 const isInteractive = (tag: string): boolean => {
   return (

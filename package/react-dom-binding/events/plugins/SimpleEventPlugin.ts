@@ -1,4 +1,3 @@
-import { Fiber } from '../../../react-reconciler/ReactInternalTypes'
 import { DOMEventName } from '../DOMEventNames'
 import {
   registerSimpleEvents,
@@ -11,6 +10,7 @@ import {
 import { EventSystemFlags, IS_CAPTURE_PHASE } from '../EventSystemFlags'
 import { AnyNativeEvent } from '../PluginModuleType'
 import { SyntheticEvent, SyntheticKeyboardEvent, SyntheticMouseEvent } from '../SyntheticEvent'
+import {Fiber} from "../../../react-reconciler-oop/types/ReactInternalTypes";
 
 const extractEvents = (
   dispatchQueue: DispatchQueue,

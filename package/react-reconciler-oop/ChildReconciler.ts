@@ -1,26 +1,30 @@
-import {REACT_ELEMENT_TYPE} from '../shared/ReactSymbols'
-import {ReactElement} from '../shared/ReactTypes'
-import {
-    createFiberFromElement, createFiberFromFragment,
-    createFiberFromText,
-    createWorkInProgress,
-} from './ReactFiber'
-import {ChildDeletion, Placement} from './ReactFiberFlags'
-import {Fiber} from './ReactInternalTypes'
-import {Fragment, HostText} from './ReactWorkTags'
+import {ReactElement} from "../shared/ReactTypes";
+import {REACT_ELEMENT_TYPE} from "../shared/ReactSymbols";
+import {ChildDeletion, Placement} from "./types/ReactFiberFlags";
+import {ReactFiberFactory} from "./ReactFiberFactory";
+import {Fiber} from "./types/ReactInternalTypes";
+import {Fragment, HostText} from "./types/ReactWorkTags";
+import {singleton} from "tsyringe";
 
 const isArray = Array.isArray
 
-const createChildReconciler = (shouldTrackSideEffects: boolean) => {
-    const placeSingleChild = (newFiber: Fiber): Fiber => {
-        if (shouldTrackSideEffects && newFiber.alternate === null) {
+
+@singleton()
+export class ChildReconciler {
+    shouldTrackSideEffects: boolean = false
+
+    constructor(private reactFiberFactory?: ReactFiberFactory) {
+    }
+
+    placeSingleChild = (newFiber: Fiber): Fiber => {
+        if (this.shouldTrackSideEffects && newFiber.alternate === null) {
             newFiber.flags |= Placement
         }
 
         return newFiber
     }
 
-    const reconcileSingleElement = (
+    reconcileSingleElement = (
         returnFiber: Fiber,
         currentFirstChild: Fiber | null,
         element: ReactElement,
@@ -31,91 +35,91 @@ const createChildReconciler = (shouldTrackSideEffects: boolean) => {
         while (child !== null) {
             if (child.key === key) {
                 if (child.tag === Fragment) {
-                    deleteRemainingChildren(returnFiber, child.sibling);
-                    var existing = useFiber(child, element.props.children);
+                    this.deleteRemainingChildren(returnFiber, child.sibling);
+                    var existing = this.useFiber(child, element.props.children);
                     existing.return = returnFiber;
                     return existing;
                 } else if (child.elementType === element.type) {
-                    deleteRemainingChildren(returnFiber, child.sibling)
-                    const existing = useFiber(child, element.props)
+                    this.deleteRemainingChildren(returnFiber, child.sibling)
+                    const existing = this.useFiber(child, element.props)
                     existing.return = returnFiber
                     return existing
                 }
-                deleteRemainingChildren(returnFiber, child)
+                this.deleteRemainingChildren(returnFiber, child)
                 break
             } else {
-                deleteChild(returnFiber, child)
+                this.deleteChild(returnFiber, child)
             }
 
             child = child.sibling
         }
 
-        const created = createFiberFromElement(element)
+        const created = this.reactFiberFactory.createFiberFromElement(element)
         created.return = returnFiber
         return created
     }
 
-    const deleteRemainingChildren = (
+    deleteRemainingChildren = (
         returnFiber: Fiber,
         currentFirstChild: Fiber | null
     ): null => {
-        if (!shouldTrackSideEffects) {
+        if (!this.shouldTrackSideEffects) {
             return null
         }
 
         let childToDelete = currentFirstChild
 
         while (childToDelete !== null) {
-            deleteChild(returnFiber, childToDelete)
+            this.deleteChild(returnFiber, childToDelete)
             childToDelete = childToDelete.sibling
         }
 
         return null
     }
 
-    const updateElement = (
+    updateElement = (
         returnFiber: Fiber,
         current: Fiber | null,
         element: ReactElement
     ): Fiber => {
         if (current !== null) {
             if (current.elementType === element.type) {
-                const existing = useFiber(current, element.props)
+                const existing = this.useFiber(current, element.props)
                 existing.return = returnFiber
                 return existing
             }
         }
 
-        const created = createFiberFromElement(element)
+        const created = this.reactFiberFactory.createFiberFromElement(element)
         created.return = returnFiber
 
         return created
     }
 
-    const useFiber = (fiber: Fiber, pendingProps: unknown): Fiber => {
-        const clone = createWorkInProgress(fiber, pendingProps)
+    useFiber = (fiber: Fiber, pendingProps: unknown): Fiber => {
+        const clone = this.reactFiberFactory.createWorkInProgress(fiber, pendingProps)
         clone.index = 0
         clone.sibling = null
         return clone
     }
 
-    const updateTextNode = (
+    updateTextNode = (
         returnFiber: Fiber,
         current: Fiber | null,
         textContent: string,
     ) => {
         if (current === null || current.tag !== HostText) {
-            const created = createFiberFromText(textContent)
+            const created = this.reactFiberFactory.createFiberFromText(textContent)
             created.return = returnFiber
             return created
         } else {
-            const existing = useFiber(current, textContent)
+            const existing = this.useFiber(current, textContent)
             existing.return = returnFiber
             return existing
         }
     }
 
-    const updateSlot = (
+    updateSlot = (
         returnFiber: Fiber,
         oldFiber: Fiber | null,
         newChild: any,
@@ -127,14 +131,14 @@ const createChildReconciler = (shouldTrackSideEffects: boolean) => {
                 throw new Error('Not Implement')
             }
 
-            return updateTextNode(returnFiber, oldFiber, '' + newChild)
+            return this.updateTextNode(returnFiber, oldFiber, '' + newChild)
         }
 
         if (typeof newChild === 'object' && newChild !== null) {
             switch (newChild.$$typeof) {
                 case REACT_ELEMENT_TYPE: {
                     if (newChild.key === key) {
-                        return updateElement(returnFiber, oldFiber, newChild)
+                        return this.updateElement(returnFiber, oldFiber, newChild)
                     } else return null
                 }
             }
@@ -147,14 +151,14 @@ const createChildReconciler = (shouldTrackSideEffects: boolean) => {
     }
 
 
-    const placeChild = (
+    placeChild = (
         newFiber: Fiber,
         lastPlacedIndex: number,
         newIndex: number
     ): number => {
         newFiber.index = newIndex
 
-        if (!shouldTrackSideEffects) return lastPlacedIndex
+        if (!this.shouldTrackSideEffects) return lastPlacedIndex
 
         const current = newFiber.alternate
 
@@ -173,12 +177,12 @@ const createChildReconciler = (shouldTrackSideEffects: boolean) => {
         }
     }
 
-    const createChild = (
+    createChild = (
         returnFiber: Fiber,
         newChild: any,
     ): Fiber | null => {
         if (typeof newChild === 'string' || typeof newChild === 'number') {
-            const created = createFiberFromText(
+            const created = this.reactFiberFactory.createFiberFromText(
                 '' + newChild,
             )
 
@@ -190,7 +194,7 @@ const createChildReconciler = (shouldTrackSideEffects: boolean) => {
         if (typeof newChild === 'object' && newChild !== null) {
             switch (newChild.$$typeof) {
                 case REACT_ELEMENT_TYPE: {
-                    const created = createFiberFromElement(
+                    const created = this.reactFiberFactory.createFiberFromElement(
                         newChild
                     )
 
@@ -201,7 +205,7 @@ const createChildReconciler = (shouldTrackSideEffects: boolean) => {
         }
 
         if (isArray(newChild)) {
-            const created = createFiberFromFragment(
+            const created = this.reactFiberFactory.createFiberFromFragment(
                 newChild,
                 null,
             );
@@ -214,8 +218,8 @@ const createChildReconciler = (shouldTrackSideEffects: boolean) => {
         throw new Error('Not Implement')
     }
 
-    const deleteChild = (returnFiber: Fiber, childToDelete: Fiber): void => {
-        if (!shouldTrackSideEffects) {
+    deleteChild = (returnFiber: Fiber, childToDelete: Fiber): void => {
+        if (!this.shouldTrackSideEffects) {
             return
         }
 
@@ -228,7 +232,7 @@ const createChildReconciler = (shouldTrackSideEffects: boolean) => {
         }
     }
 
-    const mapRemainingChildren = (
+    mapRemainingChildren = (
         returnFiber: Fiber,
         currentFirstChild: Fiber
     ): Map<string | number, Fiber> => {
@@ -249,7 +253,7 @@ const createChildReconciler = (shouldTrackSideEffects: boolean) => {
         return existingChildren
     }
 
-    const updateFromMap = (
+    updateFromMap = (
         existingChildren: Map<string | number, Fiber>,
         returnFiber: Fiber,
         newIdx: number,
@@ -258,7 +262,7 @@ const createChildReconciler = (shouldTrackSideEffects: boolean) => {
         if (typeof newChild === 'string' || typeof newChild === 'number') {
             const matchedFiber = existingChildren.get(newIdx) || null
 
-            return updateTextNode(returnFiber, matchedFiber, '' + newChild)
+            return this.updateTextNode(returnFiber, matchedFiber, '' + newChild)
         }
 
         if (typeof newChild === 'object' && newChild !== null) {
@@ -269,7 +273,7 @@ const createChildReconciler = (shouldTrackSideEffects: boolean) => {
                             newChild.key === null ? newIdx : newChild.key
                         ) ?? null
 
-                    return updateElement(returnFiber, matchedFiber, newChild)
+                    return this.updateElement(returnFiber, matchedFiber, newChild)
                 }
             }
 
@@ -279,7 +283,7 @@ const createChildReconciler = (shouldTrackSideEffects: boolean) => {
         return null
     }
 
-    const reconcileChildrenArray = (
+    reconcileChildrenArray = (
         returnFiber: Fiber,
         currentFirstChild: Fiber | null,
         newChildren: any[],
@@ -298,7 +302,7 @@ const createChildReconciler = (shouldTrackSideEffects: boolean) => {
                 nextOldFiber = oldFiber.sibling
             }
 
-            const newFiber = updateSlot(
+            const newFiber = this.updateSlot(
                 returnFiber,
                 oldFiber,
                 newChildren[newIdx]
@@ -311,14 +315,14 @@ const createChildReconciler = (shouldTrackSideEffects: boolean) => {
                 break
             }
 
-            if (shouldTrackSideEffects) {
+            if (this.shouldTrackSideEffects) {
 
                 if (oldFiber && newFiber.alternate === null) {
-                    deleteChild(returnFiber, oldFiber)
+                    this.deleteChild(returnFiber, oldFiber)
                 }
             }
 
-            lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx)
+            lastPlacedIndex = this.placeChild(newFiber, lastPlacedIndex, newIdx)
 
             if (!previousNewFiber) {
                 resultingFirstChild = newFiber
@@ -331,17 +335,17 @@ const createChildReconciler = (shouldTrackSideEffects: boolean) => {
         }
 
         if (newIdx === newChildren.length) {
-            deleteRemainingChildren(returnFiber, oldFiber)
+            this.deleteRemainingChildren(returnFiber, oldFiber)
 
             return resultingFirstChild
         }
 
         if (oldFiber === null) {
             for (; newIdx < newChildren.length; ++newIdx) {
-                const newFiber = createChild(returnFiber, newChildren[newIdx])
+                const newFiber = this.createChild(returnFiber, newChildren[newIdx])
                 if (newFiber === null) continue
 
-                lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx)
+                lastPlacedIndex = this.placeChild(newFiber, lastPlacedIndex, newIdx)
                 if (previousNewFiber === null) {
                     resultingFirstChild = newFiber
                 } else {
@@ -354,10 +358,10 @@ const createChildReconciler = (shouldTrackSideEffects: boolean) => {
             return resultingFirstChild
         }
 
-        const existingChildren = mapRemainingChildren(returnFiber, oldFiber)
+        const existingChildren = this.mapRemainingChildren(returnFiber, oldFiber)
 
         for (; newIdx < newChildren.length; ++newIdx) {
-            const newFiber = updateFromMap(
+            const newFiber = this.updateFromMap(
                 existingChildren,
                 returnFiber,
                 newIdx,
@@ -365,7 +369,7 @@ const createChildReconciler = (shouldTrackSideEffects: boolean) => {
             )
 
             if (newFiber !== null) {
-                if (shouldTrackSideEffects) {
+                if (this.shouldTrackSideEffects) {
                     if (newFiber.alternate !== null) {
                         existingChildren.delete(
                             newFiber.key === null ? newIdx : newFiber.key
@@ -373,7 +377,7 @@ const createChildReconciler = (shouldTrackSideEffects: boolean) => {
                     }
                 }
 
-                lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx)
+                lastPlacedIndex = this.placeChild(newFiber, lastPlacedIndex, newIdx)
 
                 if (previousNewFiber === null) {
                     resultingFirstChild = newFiber
@@ -384,26 +388,25 @@ const createChildReconciler = (shouldTrackSideEffects: boolean) => {
             }
         }
 
-        if (shouldTrackSideEffects) {
-            existingChildren.forEach((child) => deleteChild(returnFiber, child))
+        if (this.shouldTrackSideEffects) {
+            existingChildren.forEach((child) => this.deleteChild(returnFiber, child))
         }
 
         return resultingFirstChild
     }
 
-    const reconcileChildFibers = (
+    reconcileChildFibers = (
         returnFiber: Fiber,
         currentFirstChild: Fiber | null,
         newChild: any
     ): Fiber | null => {
-
         const isObject = typeof newChild === 'object' && newChild !== null
 
         if (isObject) {
             switch (newChild.$$typeof) {
                 case REACT_ELEMENT_TYPE: {
-                    return placeSingleChild(
-                        reconcileSingleElement(
+                    return this.placeSingleChild(
+                        this.reconcileSingleElement(
                             returnFiber,
                             currentFirstChild,
                             newChild,
@@ -414,7 +417,7 @@ const createChildReconciler = (shouldTrackSideEffects: boolean) => {
         }
 
         if (isArray(newChild)) {
-            return reconcileChildrenArray(
+            return this.reconcileChildrenArray(
                 returnFiber,
                 currentFirstChild,
                 newChild,
@@ -425,36 +428,7 @@ const createChildReconciler = (shouldTrackSideEffects: boolean) => {
             throw new Error('Not Implement')
         }
 
-        return deleteRemainingChildren(returnFiber, currentFirstChild)
+        return this.deleteRemainingChildren(returnFiber, currentFirstChild)
     }
-
-    return reconcileChildFibers
 }
 
-export const cloneChildFibers = (
-    current: Fiber | null,
-    workInProgress: Fiber
-): void => {
-    if (workInProgress.child === null) return
-
-    let currentChild = workInProgress.child
-
-    let newChild = createWorkInProgress(currentChild, currentChild.pendingProps)
-    workInProgress.child = newChild
-
-    newChild.return = workInProgress
-
-    while (currentChild.sibling !== null) {
-        currentChild = currentChild.sibling
-        newChild = newChild.sibling = createWorkInProgress(
-            currentChild,
-            currentChild.pendingProps
-        )
-        newChild.return = workInProgress
-    }
-
-    newChild.sibling = null
-}
-
-export const mountChildFibers = createChildReconciler(false)
-export const reconcileChildFibers = createChildReconciler(true)

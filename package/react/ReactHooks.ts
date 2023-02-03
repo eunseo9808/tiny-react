@@ -1,5 +1,5 @@
-import { Dispatcher } from '../react-reconciler/ReactInternalTypes'
 import { ReactCurrentDispatcher } from './ReactCurrentDispatcher'
+import {Dispatcher} from "../react-reconciler-oop/types/RectHooksTypes";
 
 type BasicStateAction<S> = ((a: S) => S) | S
 type Dispatch<A> = (a: A) => void

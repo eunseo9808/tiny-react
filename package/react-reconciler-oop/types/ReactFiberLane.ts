@@ -1,4 +1,5 @@
-import {FiberRoot} from './ReactInternalTypes'
+import {FiberRoot} from "./ReactInternalTypes";
+
 
 export type Lanes = number
 export type Lane = number
