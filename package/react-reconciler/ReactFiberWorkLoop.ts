@@ -262,14 +262,24 @@ export const scheduleUpdateOnFiber = (
     return root
 }
 
-// export const batchedEventUpdates = <A, R>(fn: (a: A) => R, a: A): R => {
-//     const prevExecutionContext = executionContext
-//     executionContext |= EventContext
-//     try {
-//         return fn(a)
-//     } finally {
-//         executionContext = prevExecutionContext
-//     }
-// }
+export const batchedEventUpdates = <A, R>(fn: (a: A) => R, a: A): R => {
+    const prevExecutionContext = executionContext
+    executionContext |= EventContext
+    try {
+        return fn(a)
+    } finally {
+        executionContext = prevExecutionContext
+    }
+}
 
+export const unbatchedUpdates = <A, R>(fn: (a: A) => R, a: A): R => {
+    const prevExecutionContext = executionContext
+    executionContext &= ~BatchedContext
+    executionContext |= LegacyUnbatchedContext
 
+    try {
+        return fn(a)
+    } finally {
+        executionContext = prevExecutionContext
+    }
+}

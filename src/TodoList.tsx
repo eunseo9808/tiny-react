@@ -14,23 +14,20 @@ export function TodoList() {
 
     const [nextTodoId, setNextTodoId] = useState<number>(0)
     const [todos, setTodos] = useState<Todo[]>([])
+    const [value, setValue] = useState<string>("")
 
-    useEffect(() => {
-        const intervalId = setInterval(() => {
-            setTodos(prev => [...prev, {
-                id: nextTodoId,
-                content: 'todo' + nextTodoId
-            }])
-            setNextTodoId(prev => prev + 1)
-        }, 1000)
+    const addTodo = () => {
+        setNextTodoId(prev => prev + 1)
+        setTodos(prev => [...prev, { id: nextTodoId, content: value }])
+    }
 
-        return () => {
-            clearInterval(intervalId)
-        }
-    }, [nextTodoId])
 
     return <div>
         Hi This is My Tiny React
+        <div>
+            <input type="text" onChange={e => setValue(e.target.value)} value={value}/>
+            <button onClick={addTodo}>Add</button>
+        </div>
         {todos.map(todo => <Todo key={todo.id} todo={todo} />)}
     </div>
 }

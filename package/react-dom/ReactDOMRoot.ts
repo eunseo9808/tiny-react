@@ -4,8 +4,7 @@ import {
 import {FiberRoot} from '../react-reconciler/ReactInternalTypes'
 import {ReactElement} from "../shared/ReactTypes";
 import {Container} from "../react-dom-binding/shared/ContainerType";
-
-// import { listenToAllSupportedEvents } from './events/DOMPluginEventSystem'
+import { listenToAllSupportedEvents } from '../react-dom-binding/events/DOMPluginEventSystem'
 
 class ReactDOMRoot {
     _internalRoot: FiberRoot
@@ -27,7 +26,7 @@ export const createRoot = (container: Container): ReactDOMRoot => {
 
 const createRootImpl = (container: Container): FiberRoot => {
     const root = createContainer(container)
-    // listenToAllSupportedEvents(container)
+    listenToAllSupportedEvents(container)
     return root
 }
 

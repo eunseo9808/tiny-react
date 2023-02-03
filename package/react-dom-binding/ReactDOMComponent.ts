@@ -1,6 +1,13 @@
 import setTextContent from "./setTextContent";
 import {setValueForStyles} from "./CSSPropertyOperations";
 import {track} from "./InputValueTracking";
+import {registrationNameDependencies} from "./events/EventRegistry";
+import {
+    initWrapperState as ReactDOMInputInitWrapperState,
+    getHostProps as ReactDOMInputGetHostProps,
+    postMountWrapper as ReactDOMInputPostMountWrapper,
+    updateWrapper as ReactDOMInputUpdateWrapper,
+} from './ReactDOMInput'
 
 const STYLE = 'style'
 const CHILDREN = 'children'
@@ -12,6 +19,10 @@ export const setInitialProperties = (
     rawProps: Object
 ) => {
     let props: Object = rawProps
+    if (tag === 'input') {
+        ReactDOMInputInitWrapperState(domElement, rawProps)
+        props = ReactDOMInputGetHostProps(domElement, rawProps)
+    }
 
     for (const propKey in props) {
         if (!props.hasOwnProperty(propKey)) continue
@@ -37,6 +48,7 @@ export const setInitialProperties = (
 
     if (tag === 'input') {
         track(domElement as HTMLInputElement)
+        ReactDOMInputPostMountWrapper(domElement, rawProps)
     }
 }
 
@@ -61,6 +73,9 @@ export const updateProperties = (
             throw new Error('Not Implement')
         }
     }
+    if(tag === 'input') {
+        ReactDOMInputUpdateWrapper(domElement, nextRawProps)
+    }
 }
 
 
@@ -77,6 +92,11 @@ export const diffProperties = (
 
     lastProps = lastRawProps
     nextProps = nextRawProps
+
+    if(tag === "input") {
+        lastProps = ReactDOMInputGetHostProps(domElement, lastRawProps)
+        nextProps = ReactDOMInputGetHostProps(domElement, nextRawProps)
+    }
 
     let propKey
     let styleName
@@ -151,8 +171,8 @@ export const diffProperties = (
                 }
                 styleUpdates = nextProp
             }
-            // } else if (registrationNameDependencies.hasOwnProperty(propKey)) {
-            //     if (!updatePayload) updatePayload = []
+        } else if (registrationNameDependencies.hasOwnProperty(propKey)) {
+            if (!updatePayload) updatePayload = []
         } else if (propKey === CHILDREN) {
             if (typeof nextProp === 'string' || typeof nextProp === 'number') {
                 updatePayload.push(propKey, '' + nextProp)

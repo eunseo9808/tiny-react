@@ -2,6 +2,7 @@ import {Fiber} from "../react-reconciler/ReactInternalTypes";
 import {Container} from "./shared/ContainerType";
 import {diffProperties, setInitialProperties, updateProperties} from "./ReactDOMComponent";
 import setTextContent from "./setTextContent";
+import {precacheFiberNode, updateFiberProps} from "./events/ReactDOMComponentTree";
 
 const STYLE = 'style'
 const CHILDREN = 'children'
@@ -42,8 +43,8 @@ export const createInstance = (
 ) => {
     const domElement: Element = document.createElement(type)
 
-    // precacheFiberNode(internalInstanceHandle, domElement)
-    // updateFiberProps(domElement, props)
+    precacheFiberNode(internalInstanceHandle, domElement)
+    updateFiberProps(domElement, props)
 
     return domElement
 }
@@ -122,7 +123,7 @@ export const commitUpdate = (
     newProps: Props,
     internalInstanceHandle: Object
 ): void => {
-    // updateFiberProps(domElement, newProps)
+    updateFiberProps(domElement, newProps)
     updateProperties(domElement, updatePayload, type, oldProps, newProps)
 }
 
