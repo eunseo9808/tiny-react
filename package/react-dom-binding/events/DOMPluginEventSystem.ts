@@ -8,7 +8,6 @@ import {
 } from "./EventListener";
 import {AnyNativeEvent} from "./PluginModuleType";
 import {Fiber} from "../../react-reconciler/ReactInternalTypes";
-import {batchedEventUpdates} from "../../react-reconciler/ReactFiberWorkLoop";
 import {getEventTarget} from "./getEventTarget";
 import {ReactSyntheticEvent} from "./ReactSyntheticEventType";
 import {EventSystemFlags, IS_CAPTURE_PHASE} from "./EventSystemFlags";
@@ -129,7 +128,7 @@ export const listenToAllSupportedEvents = (
     })
 }
 
-const extractEvents = (
+export const extractEvents = (
     dispatchQueue: DispatchQueue,
     domEventName: DOMEventName,
     targetInst: null | Fiber,
@@ -283,48 +282,4 @@ export const processDispatchQueue = (
 
         processDispatchQueueItemsInOrder(event, listeners, inCapturePhase)
     }
-}
-
-const dispatchEventsForPlugins = (
-    domEventName: DOMEventName,
-    eventSystemFlags: EventSystemFlags,
-    nativeEvent: AnyNativeEvent,
-    targetInst: null | Fiber,
-    targetContainer: EventTarget
-) => {
-    const nativeEventTarget = getEventTarget(nativeEvent)
-
-    const dispatchQueue: DispatchQueue = []
-
-    extractEvents(
-        dispatchQueue,
-        domEventName,
-        targetInst,
-        nativeEvent,
-        nativeEventTarget,
-        eventSystemFlags,
-        targetContainer
-    )
-    processDispatchQueue(dispatchQueue, eventSystemFlags)
-}
-
-export const dispatchEventForPluginEventSystem = (
-    domEventName: DOMEventName,
-    eventSystemFlags: EventSystemFlags,
-    nativeEvent: AnyNativeEvent,
-    targetInst: null | Fiber,
-    targetContainer: EventTarget
-) => {
-    const ancestorInst = targetInst
-    batchedEventUpdates(
-        () =>
-            dispatchEventsForPlugins(
-                domEventName,
-                eventSystemFlags,
-                nativeEvent,
-                ancestorInst,
-                targetContainer
-            ),
-        null,
-    )
 }

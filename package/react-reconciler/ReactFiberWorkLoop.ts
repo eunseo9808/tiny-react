@@ -27,20 +27,6 @@ import {Fiber, FiberRoot} from './ReactInternalTypes'
 import {HostRoot} from './ReactWorkTags'
 
 
-type ExecutionContext = number
-export const NoContext = /*             */ 0b000000
-const BatchedContext = /*               */ 0b000001
-const EventContext = /*                 */ 0b000010
-const LegacyUnbatchedContext = /*       */ 0b000100
-const RenderContext = /*                */ 0b001000
-const CommitContext = /*                */ 0b010000
-
-type RootExitStatus = 5 | 0
-const RootIncomplete = 0
-const RootCompleted = 5
-
-let executionContext: ExecutionContext = NoContext
-
 let workInProgressRoot: FiberRoot | null = null
 let workInProgress: Fiber | null = null
 let workInProgressRootRenderLanes: Lanes = NoLanes
@@ -99,12 +85,8 @@ const flushPassiveEffectsImpl = () => {
     const root = rootWithPendingPassiveEffects
     rootWithPendingPassiveEffects = null
 
-    const prevExecutionContext = executionContext
-    executionContext |= CommitContext
     commitPassiveUnmountEffects(root.current)
     commitPassiveMountEffects(root, root.current)
-
-    executionContext = prevExecutionContext
 
     flushSyncCallbacks()
 
@@ -124,8 +106,6 @@ export const flushPassiveEffects = (): boolean => {
 }
 
 const renderRootSync = (root: FiberRoot, lanes: Lanes) => {
-    const prevExecutionContext = executionContext
-    executionContext |= RenderContext
 
     if (workInProgressRoot !== root || workInProgressRootRenderLanes !== lanes) {
         prepareFreshStack(root, lanes)
@@ -134,8 +114,6 @@ const renderRootSync = (root: FiberRoot, lanes: Lanes) => {
     while (workInProgress !== null) {
         performUnitOfWork(workInProgress)
     }
-
-    executionContext = prevExecutionContext
 
     workInProgressRoot = null
     workInProgressRootRenderLanes = NoLanes
@@ -260,26 +238,4 @@ export const scheduleUpdateOnFiber = (
     scheduleSyncCallback(performSyncWorkOnRoot.bind(null, root))
     setTimeout(() => flushSyncCallbacks(), 0)
     return root
-}
-
-export const batchedEventUpdates = <A, R>(fn: (a: A) => R, a: A): R => {
-    const prevExecutionContext = executionContext
-    executionContext |= EventContext
-    try {
-        return fn(a)
-    } finally {
-        executionContext = prevExecutionContext
-    }
-}
-
-export const unbatchedUpdates = <A, R>(fn: (a: A) => R, a: A): R => {
-    const prevExecutionContext = executionContext
-    executionContext &= ~BatchedContext
-    executionContext |= LegacyUnbatchedContext
-
-    try {
-        return fn(a)
-    } finally {
-        executionContext = prevExecutionContext
-    }
 }
