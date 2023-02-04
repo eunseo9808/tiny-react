@@ -1,8 +1,8 @@
 import {NoFlags, StaticMask, Update} from "../types/ReactFiberFlags";
 import {NoLanes} from "../types/ReactFiberLane";
 import {ChildReconciler} from "../ChildReconciler";
-import {Fiber} from "../types/ReactInternalTypes";
 import {container} from "tsyringe";
+import {Fiber} from "../ReactFiber";
 
 
 interface IReactComponent {

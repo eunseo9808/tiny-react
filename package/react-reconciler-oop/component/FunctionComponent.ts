@@ -10,11 +10,11 @@ import {
 } from '../types/ReactFiberFlags'
 import {ReactCurrentDispatcher} from "../../react/ReactCurrentDispatcher";
 import {HooksContext} from "../hooks/HooksContext";
-import {Fiber} from "../types/ReactInternalTypes";
 import {PassiveEffectManager} from "../PassiveEffectManager";
 import {Dispatcher} from "../types/RectHooksTypes";
 import {HooksUseState} from "../hooks/HooksUseState";
 import {HooksUseEffect} from "../hooks/HooksUseEffect";
+import {Fiber} from "../ReactFiber";
 
 @singleton()
 export class FunctionComponent extends ReactComponent {

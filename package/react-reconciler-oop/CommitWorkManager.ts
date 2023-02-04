@@ -1,8 +1,6 @@
-import {HookFlags} from "./types/ReactHookEffectTags";
 import {singleton} from "tsyringe";
-import {FunctionComponentUpdateQueue} from "./types/RectHooksTypes";
-import {Fiber} from "./types/ReactInternalTypes";
 import {getComponent} from "./getComponent";
+import {Fiber} from "./ReactFiber";
 
 @singleton()
 export class CommitWorkManager {

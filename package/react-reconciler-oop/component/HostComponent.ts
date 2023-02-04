@@ -8,8 +8,8 @@ import {
 } from "../../react-dom-binding/ReactDOMHostConfig";
 
 import {HostTextComponent} from "./HostTextComponent";
-import {Fiber} from "../types/ReactInternalTypes";
 import {singleton} from "tsyringe";
+import {Fiber} from "../ReactFiber";
 
 
 @singleton()

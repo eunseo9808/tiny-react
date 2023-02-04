@@ -20,8 +20,8 @@ import {HostTextComponent} from "./component/HostTextComponent";
 import {inject, injectable} from "tsyringe";
 import {CommitWorkManager} from "./CommitWorkManager";
 import {Container} from "../react-dom-binding/shared/ContainerType";
-import {Fiber, FiberRoot} from "./types/ReactInternalTypes";
-import {FunctionComponentUpdateQueue} from "./types/RectHooksTypes";
+import {Fiber} from "./ReactFiber";
+import {FiberRoot} from "./ReactFiberRoot";
 
 
 @injectable()

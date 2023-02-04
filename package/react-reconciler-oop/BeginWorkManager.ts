@@ -1,7 +1,7 @@
 import {NoLanes, SyncLane} from "./types/ReactFiberLane";
 import {ReactFiberFactory} from "./ReactFiberFactory";
 import {inject, injectable, singleton} from "tsyringe";
-import {Fiber} from "./types/ReactInternalTypes";
+import {Fiber} from "./ReactFiber";
 
 @singleton()
 export class BeginWorkManager {

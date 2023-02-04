@@ -2,9 +2,9 @@ import {ReactElement} from "../shared/ReactTypes";
 import {REACT_ELEMENT_TYPE} from "../shared/ReactSymbols";
 import {ChildDeletion, Placement} from "./types/ReactFiberFlags";
 import {ReactFiberFactory} from "./ReactFiberFactory";
-import {Fiber} from "./types/ReactInternalTypes";
 import {Fragment, HostText} from "./types/ReactWorkTags";
 import {singleton} from "tsyringe";
+import {Fiber} from "./ReactFiber";
 
 const isArray = Array.isArray
 

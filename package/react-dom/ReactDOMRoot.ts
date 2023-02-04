@@ -4,8 +4,7 @@ import {Container} from "../react-dom-binding/shared/ContainerType";
 import {listenToAllSupportedEvents} from '../react-dom-binding/events/DOMPluginEventSystem'
 import {container, singleton} from "tsyringe";
 import {ContainerFactory} from "../react-reconciler-oop/ContainerFactory";
-import {ReactFiberFactory} from "../react-reconciler-oop/ReactFiberFactory";
-import {FiberRoot} from "../react-reconciler-oop/types/ReactInternalTypes";
+import {FiberRoot} from "../react-reconciler-oop/ReactFiberRoot";
 
 const containerFactory = container.resolve(ContainerFactory);
 

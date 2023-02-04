@@ -1,4 +1,4 @@
-import {FiberRoot} from "../../react-reconciler-oop/types/ReactInternalTypes";
+import {FiberRoot} from "../../react-reconciler-oop/ReactFiberRoot";
 
 
 export type Container =

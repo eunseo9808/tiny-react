@@ -8,8 +8,9 @@ import {ReactFiberFactory} from "./ReactFiberFactory";
 import {MutationEffectManager} from "./MutationEffectManager";
 import {PassiveEffectManager} from "./PassiveEffectManager";
 import {Scheduler, workLoopSchedule} from "./Scheduler";
-import {Fiber, FiberRoot} from "./types/ReactInternalTypes";
 import {getComponent} from "./getComponent";
+import {FiberRoot} from "./ReactFiberRoot";
+import {Fiber} from "./ReactFiber";
 
 @singleton()
 export class WorkManager {

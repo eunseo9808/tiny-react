@@ -14,7 +14,7 @@ import * as ChangeEventPlugin from './plugins/ChangeEventPlugin'
 import {dispatchEvent} from './ReactDOMEventListener'
 import {getListener} from "./getListener";
 import {HostComponent} from "../../react-reconciler-oop/component/HostComponent";
-import {Fiber} from "../../react-reconciler-oop/types/ReactInternalTypes";
+import {Fiber} from "../../react-reconciler-oop/ReactFiber";
 
 SimpleEventPlugin.registerEvents()
 ChangeEventPlugin.registerEvents()

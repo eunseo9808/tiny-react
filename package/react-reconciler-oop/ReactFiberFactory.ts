@@ -3,19 +3,18 @@ import {NoFlags} from "./types/ReactFiberFlags";
 import {ReactElement, ReactFragment} from "../shared/ReactTypes";
 
 import {singleton} from "tsyringe";
-import {Fiber, FiberRoot} from "./types/ReactInternalTypes";
-import {FiberNode} from "./ReactFiber";
-import {FiberRootNode} from "./ReactFiberRoot";
+import {Fiber} from "./ReactFiber";
+import {FiberRoot} from "./ReactFiberRoot";
 
 @singleton()
 export class ReactFiberFactory {
     createHostRootFiber = (): Fiber => {
-        return new FiberNode(HostRoot, null, null)
+        return new Fiber(HostRoot, null, null)
     }
     createFiberRoot = (
         containerInfo: any,
     ): FiberRoot => {
-        const root: FiberRoot = new FiberRootNode(containerInfo)
+        const root: FiberRoot = new FiberRoot(containerInfo)
 
         const uninitializedFiber = this.createHostRootFiber()
         root.current = uninitializedFiber
@@ -29,7 +28,7 @@ export class ReactFiberFactory {
         pendingProps: unknown,
         key: string | null,
     ) => {
-        return new FiberNode(tag, pendingProps, key)
+        return new Fiber(tag, pendingProps, key)
     }
 
     createWorkInProgress = (

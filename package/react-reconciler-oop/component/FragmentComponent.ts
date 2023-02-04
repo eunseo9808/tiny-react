@@ -1,7 +1,7 @@
 import {ReactComponent} from "./ReactComponent";
 import {WorkTag} from "../types/ReactWorkTags";
-import {Fiber} from "../types/ReactInternalTypes";
 import {singleton} from "tsyringe";
+import {Fiber} from "../ReactFiber";
 
 
 @singleton()

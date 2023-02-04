@@ -2,7 +2,7 @@ import {Container} from "./shared/ContainerType";
 import {diffProperties, setInitialProperties, updateProperties} from "./ReactDOMComponent";
 import setTextContent from "./setTextContent";
 import {precacheFiberNode, updateFiberProps} from "./events/ReactDOMComponentTree";
-import {Fiber} from "../react-reconciler-oop/types/ReactInternalTypes";
+import {Fiber} from "../react-reconciler-oop/ReactFiber";
 
 const STYLE = 'style'
 const CHILDREN = 'children'

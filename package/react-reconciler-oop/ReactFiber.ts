@@ -1,9 +1,8 @@
 import {Flags} from './types/ReactFiberFlags'
 import {NoLanes} from "./types/ReactFiberLane";
 import {WorkTag} from "./types/ReactWorkTags";
-import {Fiber} from "./types/ReactInternalTypes";
 
-export class FiberNode {
+export class Fiber {
     stateNode: any = null
     updateQueue: unknown = null
     return: Fiber = null

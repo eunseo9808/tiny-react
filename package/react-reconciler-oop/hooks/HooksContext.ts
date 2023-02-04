@@ -1,7 +1,7 @@
 import {Lanes, NoLanes} from "../types/ReactFiberLane";
 import {container, singleton} from "tsyringe";
 import {Dispatcher, Hook} from "../types/RectHooksTypes";
-import {Fiber} from "../types/ReactInternalTypes";
+import {Fiber} from "../ReactFiber";
 
 
 @singleton()

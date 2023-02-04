@@ -2,9 +2,9 @@ import {NoLanes, SyncLane} from "../types/ReactFiberLane";
 import {inject, injectable, singleton} from "tsyringe";
 import {HooksContext} from "./HooksContext";
 import {BasicStateAction, Dispatch, Hook, Update, UpdateQueue} from "../types/RectHooksTypes";
-import {Fiber} from "../types/ReactInternalTypes";
 import {BeginWorkManager} from "../BeginWorkManager";
 import { workLoopSchedule } from "../Scheduler";
+import {Fiber} from "../ReactFiber";
 
 
 @singleton()

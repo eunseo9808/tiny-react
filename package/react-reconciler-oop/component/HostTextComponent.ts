@@ -1,9 +1,8 @@
 import {ReactComponent} from "./ReactComponent";
 import {WorkTag} from "../types/ReactWorkTags";
-import {HookFlags} from "../types/ReactHookEffectTags";
 import {commitTextUpdate, createTextInstance, prepareUpdate, Props} from "../../react-dom-binding/ReactDOMHostConfig";
-import {Fiber} from "../types/ReactInternalTypes";
 import {singleton} from "tsyringe";
+import {Fiber} from "../ReactFiber";
 
 @singleton()
 export class HostTextComponent extends ReactComponent {

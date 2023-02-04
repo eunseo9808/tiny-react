@@ -4,7 +4,8 @@ import {SyncLane} from "./types/ReactFiberLane";
 import {container, inject, injectable, Lifecycle, scoped, singleton} from "tsyringe";
 import {ReactFiberFactory} from "./ReactFiberFactory";
 import {WorkManager} from "./WorkManager";
-import {Fiber, FiberRoot} from "./types/ReactInternalTypes";
+import {FiberRoot} from "./ReactFiberRoot";
+import {Fiber} from "./ReactFiber";
 
 @singleton()
 export class ContainerFactory {
