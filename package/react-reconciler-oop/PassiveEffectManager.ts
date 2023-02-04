@@ -1,7 +1,7 @@
 import {HasEffect, HookFlags, Passive} from "./types/ReactHookEffectTags";
 import {ChildDeletion, NoFlags, PassiveMask} from "./types/ReactFiberFlags";
 import {singleton} from "tsyringe";
-import {FunctionComponentUpdateQueue} from "./types/RectHooksTypes";
+import {FunctionComponentUpdateQueue} from "./types/ReactHooksTypes";
 import {FunctionComponent} from "./types/ReactWorkTags";
 import {Fiber} from "./ReactFiber";
 import {FiberRoot} from "./ReactFiberRoot";

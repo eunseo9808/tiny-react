@@ -1,7 +1,7 @@
 import {ReactComponent} from "./ReactComponent";
 import {WorkTag} from "../types/ReactWorkTags";
 import {HasEffect, HookFlags} from "../types/ReactHookEffectTags";
-import {container, inject, injectable, registry, singleton} from "tsyringe";
+import {container, singleton} from "tsyringe";
 import {BeginWorkManager} from "../BeginWorkManager";
 import {NoLanes} from "../types/ReactFiberLane";
 import {
@@ -9,21 +9,20 @@ import {
     Update as UpdateEffect,
 } from '../types/ReactFiberFlags'
 import {ReactCurrentDispatcher} from "../../react/ReactCurrentDispatcher";
-import {HooksContext} from "../hooks/HooksContext";
+
 import {PassiveEffectManager} from "../PassiveEffectManager";
-import {Dispatcher} from "../types/RectHooksTypes";
+import {Dispatcher} from "../types/ReactHooksTypes";
 import {HooksUseState} from "../hooks/HooksUseState";
 import {HooksUseEffect} from "../hooks/HooksUseEffect";
 import {Fiber} from "../ReactFiber";
+import {hooksContext} from "../hooks/hooksContext";
 
 @singleton()
 export class FunctionComponent extends ReactComponent {
     static tag: WorkTag = 0
 
     constructor(private beginWorkManager?: BeginWorkManager,
-                private passiveEffectManager?: PassiveEffectManager,
-                private hooksContext?: HooksContext
-    ) {
+                private passiveEffectManager?: PassiveEffectManager) {
         super()
     }
 
@@ -65,7 +64,7 @@ export class FunctionComponent extends ReactComponent {
         props: Props,
         secondArg: SecondArg,
     ) => {
-        this.hooksContext.currentlyRenderingFiber = workInProgress
+        hooksContext.current.currentlyRenderingFiber = workInProgress
 
         workInProgress.updateQueue = null
         workInProgress.memoizedState = null
@@ -75,11 +74,10 @@ export class FunctionComponent extends ReactComponent {
 
         let children = Component(props, secondArg)
 
-        this.hooksContext.renderLanes = NoLanes
-        this.hooksContext.currentlyRenderingFiber = null as any
-
-        this.hooksContext.currentHook = null
-        this.hooksContext.workInProgressHook = null
+        hooksContext.current.renderLanes = NoLanes
+        hooksContext.current.currentlyRenderingFiber = null
+        hooksContext.current.currentHook = null
+        hooksContext.current.workInProgressHook = null
 
         return children
     }

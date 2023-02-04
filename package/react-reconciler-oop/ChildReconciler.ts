@@ -335,7 +335,6 @@ export class ChildReconciler {
             }
 
             if (this.shouldTrackSideEffects) {
-
                 if (oldFiber && newFiber.alternate === null) {
                     this.deleteChild(returnFiber, oldFiber)
                 }

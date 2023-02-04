@@ -1,16 +1,18 @@
 import {NoLanes, SyncLane} from "../types/ReactFiberLane";
-import {inject, injectable, singleton} from "tsyringe";
-import {HooksContext} from "./HooksContext";
-import {BasicStateAction, Dispatch, Hook, Update, UpdateQueue} from "../types/RectHooksTypes";
+import {singleton} from "tsyringe";
+
+import {BasicStateAction, Dispatch, Hook, Update, UpdateQueue} from "../types/ReactHooksTypes";
 import {BeginWorkManager} from "../BeginWorkManager";
 import { workLoopSchedule } from "../Scheduler";
 import {Fiber} from "../ReactFiber";
+import {Hooks} from "./Hooks";
+import {hooksContext} from "./hooksContext";
 
 
 @singleton()
-export class HooksUseState {
-    constructor(private hooksContext?: HooksContext,
-                private beginWorkManager?: BeginWorkManager) {
+export class HooksUseState extends Hooks {
+    constructor(private beginWorkManager?: BeginWorkManager) {
+        super();
     }
 
     basicStateReducer = <S>(state: S, action: BasicStateAction<S>): S => {
@@ -61,7 +63,7 @@ export class HooksUseState {
     mountState = <S>(
         initialState: (() => S) | S
     ): [S, Dispatch<BasicStateAction<S>>] => {
-        const hook = this.hooksContext.mountWorkInProgressHook()
+        const hook = this.mountWorkInProgressHook()
 
         if (typeof initialState === 'function') {
             initialState = (initialState as () => S)()
@@ -78,7 +80,7 @@ export class HooksUseState {
         })
 
         const dispatch: Dispatch<BasicStateAction<S>> = (queue.dispatch =
-            this.dispatchAction.bind(null, this.hooksContext.currentlyRenderingFiber, queue) as any)
+            this.dispatchAction.bind(null, hooksContext.current.currentlyRenderingFiber, queue) as any)
 
         return [hook.memoizedState, dispatch]
     }
@@ -89,11 +91,11 @@ export class HooksUseState {
         init?: (i: I) => S
     ): [S, Dispatch<A>] => {
 
-        const hook = this.hooksContext.updateWorkInProgressHook()
+        const hook = this.updateWorkInProgressHook()
         const queue = hook.queue!
 
         queue.lastRenderedReducer = reducer
-        const current: Hook = this.hooksContext.currentHook as any
+        const current: Hook = hooksContext.current.currentHook as any
 
         let baseQueue = current.baseQueue
 

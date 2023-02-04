@@ -1,5 +1,4 @@
-import {inject, injectable, singleton} from "tsyringe";
-import {HooksContext} from "./HooksContext";
+import {singleton} from "tsyringe";
 import {
     HookFlags,
     Passive as HookPassive,
@@ -10,12 +9,13 @@ import {
     Flags as FiberFlags,
     Passive as PassiveEffect,
 } from '../types/ReactFiberFlags'
-import {Effect, FunctionComponentUpdateQueue} from "../types/RectHooksTypes";
+import {Effect, FunctionComponentUpdateQueue} from "../types/ReactHooksTypes";
+import {Hooks} from "./Hooks";
+import {hooksContext} from "./hooksContext";
+
 
 @singleton()
-export class HooksUseEffect {
-    constructor(private hooksContext?: HooksContext) {
-    }
+export class HooksUseEffect extends Hooks {
 
     areHookInputsEqual = (
         nextDeps: unknown[] | null,
@@ -40,13 +40,13 @@ export class HooksUseEffect {
         create: () => (() => void),
         deps: unknown[] | null
     ): void => {
-        const hook = this.hooksContext.updateWorkInProgressHook()
+        const hook = this.updateWorkInProgressHook()
         const nextDeps = deps === undefined ? null : deps
 
         let destroy = undefined
 
-        if (this.hooksContext.currentHook !== null) {
-            const prevEffect = this.hooksContext.currentHook.memoizedState
+        if (hooksContext.current.currentHook !== null) {
+            const prevEffect = hooksContext.current.currentHook.memoizedState
             destroy = prevEffect.destroy
             if (nextDeps !== null) {
                 const prevDeps = prevEffect.deps
@@ -57,7 +57,7 @@ export class HooksUseEffect {
             }
         }
 
-        this.hooksContext.currentlyRenderingFiber.flags |= fiberFlags
+        hooksContext.current.currentlyRenderingFiber.flags |= fiberFlags
         hook.memoizedState = this.pushEffect(
             HookHasEffect | hookFlags,
             create,
@@ -89,13 +89,13 @@ export class HooksUseEffect {
         }
 
         let componentUpdateQueue: null | FunctionComponentUpdateQueue =
-            this.hooksContext.currentlyRenderingFiber.updateQueue as any
+            hooksContext.current.currentlyRenderingFiber.updateQueue as any
 
         if (componentUpdateQueue === null) {
             componentUpdateQueue = {
                 lastEffect: null,
             }
-            this.hooksContext.currentlyRenderingFiber.updateQueue = componentUpdateQueue
+            hooksContext.current.currentlyRenderingFiber.updateQueue = componentUpdateQueue
             componentUpdateQueue.lastEffect = effect.next = effect
         } else {
             const lastEffect = componentUpdateQueue.lastEffect
@@ -118,9 +118,9 @@ export class HooksUseEffect {
         create: () => (() => void),
         deps: unknown[] | null
     ): void => {
-        const hook = this.hooksContext.mountWorkInProgressHook()
+        const hook = this.mountWorkInProgressHook()
         const nextDeps = deps === undefined ? null : deps
-        this.hooksContext.currentlyRenderingFiber.flags |= fiberFlags
+        hooksContext.current.currentlyRenderingFiber.flags |= fiberFlags
         hook.memoizedState = this.pushEffect(
             HookHasEffect | hookFlags,
             create,

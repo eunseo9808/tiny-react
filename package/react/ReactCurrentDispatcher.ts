@@ -1,4 +1,4 @@
-import {Dispatcher} from "../react-reconciler-oop/types/RectHooksTypes";
+import {Dispatcher} from "../react-reconciler-oop/types/ReactHooksTypes";
 
 const ReactCurrentDispatcher: {
     current: null | Dispatcher
