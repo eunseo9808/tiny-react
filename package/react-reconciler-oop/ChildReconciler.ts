@@ -118,6 +118,17 @@ export class ChildReconciler {
             return existing
         }
     }
+    updateFragment(returnFiber, current, fragment, key) {
+        if (current === null || current.tag !== Fragment) {
+            var created = this.reactFiberFactory.createFiberFromFragment(fragment, key);
+            created.return = returnFiber;
+            return created;
+        } else {
+            var existing = this.useFiber(current, fragment);
+            existing.return = returnFiber;
+            return existing;
+        }
+    }
 
     updateSlot = (
         returnFiber: Fiber,
@@ -141,6 +152,13 @@ export class ChildReconciler {
                         return this.updateElement(returnFiber, oldFiber, newChild)
                     } else return null
                 }
+            }
+            if (isArray(newChild)) {
+                if (key !== null) {
+                    return null;
+                }
+
+                return this.updateFragment(returnFiber, oldFiber, newChild, null);
             }
             throw new Error('Not Implement')
         }
@@ -295,6 +313,7 @@ export class ChildReconciler {
         let lastPlacedIndex = 0
         let newIdx = 0
         let nextOldFiber = null
+
         for (; oldFiber !== null && newIdx < newChildren.length; ++newIdx) {
             if (oldFiber.index > newIdx) {
                 throw new Error('Not Implement')

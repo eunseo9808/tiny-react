@@ -55,7 +55,7 @@ export class HooksUseState {
             }
         }
 
-        workLoopSchedule.current()
+        workLoopSchedule.current(fiber)
     }
 
     mountState = <S>(

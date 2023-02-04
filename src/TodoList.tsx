@@ -11,7 +11,6 @@ function Todo(props: { todo: Todo }) {
 }
 
 export function TodoList() {
-
     const [nextTodoId, setNextTodoId] = useState<number>(0)
     const [todos, setTodos] = useState<Todo[]>([])
     const [value, setValue] = useState<string>("")
@@ -20,7 +19,6 @@ export function TodoList() {
         setNextTodoId(prev => prev + 1)
         setTodos(prev => [...prev, { id: nextTodoId, content: value }])
     }
-
 
     return <div>
         Hi This is My Tiny React

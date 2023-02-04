@@ -11,8 +11,8 @@ export class FragmentComponent extends ReactComponent {
     commitWork(current: Fiber, finishedWork: Fiber): void {
     }
 
-    completeWork(): boolean {
-        return false
+    completeWork(current: Fiber | null, workInProgress: Fiber): boolean {
+        return this.bubbleProperties(workInProgress)
     }
 
     updateComponent(current: Fiber | null, workInProgress: Fiber): Fiber | null {

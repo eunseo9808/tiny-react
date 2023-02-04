@@ -17,7 +17,6 @@ export abstract class ReactComponent implements IReactComponent {
         workInProgress: Fiber,
         nextChildren: any,
     ) {
-
         const childReconciler = container.resolve(ChildReconciler)
 
         if (current === null) childReconciler.shouldTrackSideEffects = false
@@ -26,7 +25,6 @@ export abstract class ReactComponent implements IReactComponent {
         workInProgress.child = childReconciler.reconcileChildFibers(workInProgress,
             current?.child ?? null,
             nextChildren)
-
     }
 
     markUpdate(workInProgress: Fiber) {

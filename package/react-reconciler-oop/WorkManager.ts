@@ -99,7 +99,6 @@ export class WorkManager {
     }
 
     renderRootSync = (root: FiberRoot, lanes: Lanes) => {
-
         if (this.workInProgressRoot !== root || this.workInProgressRootRenderLanes !== lanes) {
             this.prepareFreshStack(root, lanes)
         }
@@ -173,9 +172,7 @@ export class WorkManager {
         this.renderRootSync(root, lanes)
 
         const finishedWork: Fiber | null = root.current.alternate
-
         root.finishedWork = finishedWork
-
         this.commitRoot(root)
 
         return null
@@ -216,8 +213,8 @@ export class WorkManager {
     }
 
     scheduleUpdateOnFiber = (
-        fiber: Fiber,
-        lane: Lane
+        lane: Lane,
+        fiber: Fiber
     ): FiberRoot | null => {
         const root = this.markUpdateLaneFromFiberToRoot(fiber, lane)
 
@@ -249,7 +246,8 @@ export class WorkManager {
             this.beginWorkManager.didReceiveUpdate = false
         }
         workInProgress.lanes = NoLanes
-        workLoopSchedule.current = this.scheduleUpdateOnFiber.bind(this, workInProgress, SyncLane)
+
+        workLoopSchedule.current = this.scheduleUpdateOnFiber.bind(this, SyncLane)
 
         return getComponent(workInProgress.tag).updateComponent(current, workInProgress)
     }

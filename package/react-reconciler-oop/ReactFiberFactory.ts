@@ -58,7 +58,6 @@ export class ReactFiberFactory {
             workInProgress.flags = NoFlags
             workInProgress.subtreeFlags = NoFlags
             workInProgress.deletions = null
-
         }
 
         workInProgress.lanes = current.lanes
@@ -68,6 +67,7 @@ export class ReactFiberFactory {
         workInProgress.child = current.child
         workInProgress.memoizedProps = current.memoizedProps
         workInProgress.memoizedState = current.memoizedState
+        workInProgress.elementType = current.elementType
 
         return workInProgress
     }
@@ -86,6 +86,7 @@ export class ReactFiberFactory {
 
         const fiber = this.createFiber(fiberTag, pendingProps, key)
         fiber.type = type
+        fiber.elementType = type
         return fiber
     }
 

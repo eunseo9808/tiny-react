@@ -24,7 +24,7 @@ export class ContainerFactory {
     ) => {
         const current: Fiber = container.current
         current.memoizedState = { element }
-        this.workManager.scheduleUpdateOnFiber(current, SyncLane)
+        this.workManager.scheduleUpdateOnFiber(SyncLane, current)
     }
 }
 
