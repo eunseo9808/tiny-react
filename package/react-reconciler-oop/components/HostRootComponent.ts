@@ -1,12 +1,11 @@
 import {ReactComponent} from "./ReactComponent";
 import {WorkTag} from "../types/ReactWorkTags";
-import {singleton} from "tsyringe";
+import {container, registry, singleton} from "tsyringe";
 import {Fiber} from "../ReactFiber";
 
-
 @singleton()
-export class FragmentComponent extends ReactComponent {
-    static tag: WorkTag = 7
+export class HostRootComponent extends ReactComponent {
+    static tag: WorkTag = 3
 
     commitWork(current: Fiber, finishedWork: Fiber): void {
     }
@@ -16,8 +15,11 @@ export class FragmentComponent extends ReactComponent {
     }
 
     updateComponent(current: Fiber | null, workInProgress: Fiber): Fiber | null {
-        const nextChildren = workInProgress.pendingProps
+
+        const nextChildren = workInProgress.memoizedState.element
         this.reconcileChildren(current, workInProgress, nextChildren)
+
         return workInProgress.child
     }
 }
+

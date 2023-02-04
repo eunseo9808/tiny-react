@@ -1,7 +1,7 @@
 import {ReactComponent} from "./ReactComponent";
 import {WorkTag} from "../types/ReactWorkTags";
 import {commitTextUpdate, createTextInstance, prepareUpdate, Props} from "../../react-dom-binding/ReactDOMHostConfig";
-import {singleton} from "tsyringe";
+import {container, registry, singleton} from "tsyringe";
 import {Fiber} from "../ReactFiber";
 
 @singleton()

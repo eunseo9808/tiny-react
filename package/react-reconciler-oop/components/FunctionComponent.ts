@@ -1,8 +1,8 @@
 import {ReactComponent} from "./ReactComponent";
 import {WorkTag} from "../types/ReactWorkTags";
 import {HasEffect, HookFlags} from "../types/ReactHookEffectTags";
-import {container, singleton} from "tsyringe";
-import {BeginWorkManager} from "../BeginWorkManager";
+import {container, delay, inject, registry, singleton} from "tsyringe";
+import {BeginWorkManager} from "../managers/BeginWorkManager";
 import {NoLanes} from "../types/ReactFiberLane";
 import {
     Passive as PassiveEffect,
@@ -10,18 +10,19 @@ import {
 } from '../types/ReactFiberFlags'
 import {ReactCurrentDispatcher} from "../../react/ReactCurrentDispatcher";
 
-import {PassiveEffectManager} from "../PassiveEffectManager";
+import {PassiveEffectManager} from "../managers/PassiveEffectManager";
 import {Dispatcher} from "../types/ReactHooksTypes";
 import {HooksUseState} from "../hooks/HooksUseState";
 import {HooksUseEffect} from "../hooks/HooksUseEffect";
 import {Fiber} from "../ReactFiber";
 import {hooksContext} from "../hooks/hooksContext";
+import {didReceiveUpdate} from "../GlobalVariable";
 
 @singleton()
 export class FunctionComponent extends ReactComponent {
     static tag: WorkTag = 0
 
-    constructor(private beginWorkManager?: BeginWorkManager,
+    constructor(@inject(delay(() => BeginWorkManager)) private beginWorkManager?: BeginWorkManager,
                 private passiveEffectManager?: PassiveEffectManager) {
         super()
     }
@@ -47,7 +48,7 @@ export class FunctionComponent extends ReactComponent {
             null
         )
 
-        if (current !== null && !this.beginWorkManager.didReceiveUpdate) {
+        if (current !== null && !didReceiveUpdate.current) {
             this.bailoutHooks(current, workInProgress)
             return this.beginWorkManager.bailoutOnAlreadyFinishedWork(current, workInProgress)
         }

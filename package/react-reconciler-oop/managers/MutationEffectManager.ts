@@ -5,23 +5,21 @@ import {
     Placement,
     PlacementAndUpdate,
     Update
-} from "./types/ReactFiberFlags";
-import {HookFlags, NoFlags} from "./types/ReactHookEffectTags";
+} from "../types/ReactFiberFlags";
+import {HookFlags, NoFlags} from "../types/ReactHookEffectTags";
 import {
     appendChild,
     appendChildToContainer, insertBefore,
     insertInContainerBefore,
     removeChild,
     resetTextContent
-} from "../react-dom-binding/ReactDOMHostConfig";
-import {HostRootComponent} from "./component/HostRootComponent";
-import {HostComponent} from "./component/HostComponent";
-import {HostTextComponent} from "./component/HostTextComponent";
+} from "../../react-dom-binding/ReactDOMHostConfig";
 import {inject, injectable} from "tsyringe";
 import {CommitWorkManager} from "./CommitWorkManager";
-import {Container} from "../react-dom-binding/shared/ContainerType";
-import {Fiber} from "./ReactFiber";
-import {FiberRoot} from "./ReactFiberRoot";
+import {Container} from "../../react-dom-binding/shared/ContainerType";
+import {Fiber} from "../ReactFiber";
+import {FiberRoot} from "../ReactFiberRoot";
+import {HostComponent, HostRoot, HostText} from "../types/ReactWorkTags";
 
 
 @injectable()
@@ -227,11 +225,11 @@ export class MutationEffectManager {
                 findParent: while (true) {
                     const parentStateNode = parent?.stateNode
                     switch (parent?.tag) {
-                        case HostComponent.tag:
+                        case HostComponent:
                             currentParent = parentStateNode
                             currentParentIsContainer = false
                             break findParent
-                        case HostRootComponent.tag:
+                        case HostRoot:
                             currentParent = parentStateNode.containerInfo
                             currentParentIsContainer = true
                             break findParent
@@ -242,7 +240,7 @@ export class MutationEffectManager {
                 currentParentIsValid = true
             }
 
-            if (node.tag === HostComponent.tag || node.tag === HostTextComponent.tag) {
+            if (node.tag === HostComponent || node.tag === HostText) {
                 this.commitNestedUnmounts(finishedRoot, node, nearestMountedAncestor)
                 removeChild(currentParent, node.stateNode)
 
@@ -279,12 +277,12 @@ export class MutationEffectManager {
         const parentStateNode = parentFiber.stateNode
 
         switch (parentFiber.tag) {
-            case HostComponent.tag:
+            case HostComponent:
                 parent = parentStateNode
                 isContainer = false
                 break
 
-            case HostRootComponent.tag:
+            case HostRoot:
                 parent = parentStateNode.containerInfo
                 isContainer = true
                 break
@@ -308,7 +306,7 @@ export class MutationEffectManager {
     }
 
     isHostParent = (fiber: Fiber): boolean => {
-        return fiber.tag === HostComponent.tag || fiber.tag === HostRootComponent.tag
+        return fiber.tag === HostComponent || fiber.tag === HostRoot
     }
 
     getHostParentFiber = (fiber: Fiber): Fiber => {
@@ -337,7 +335,7 @@ export class MutationEffectManager {
             node.sibling.return = node.return
             node = node.sibling
 
-            while (node.tag !== HostComponent.tag) {
+            while (node.tag !== HostComponent) {
                 if (node.flags & Placement) {
                     continue siblings
                 }
@@ -363,7 +361,7 @@ export class MutationEffectManager {
     ): void => {
         const { tag } = node
 
-        const isHost = tag === HostComponent.tag || tag === HostTextComponent.tag
+        const isHost = tag === HostComponent || tag === HostText
 
         if (isHost) {
             const stateNode = isHost ? node.stateNode : node.stateNode.instance
@@ -393,7 +391,7 @@ export class MutationEffectManager {
         parent: Container
     ): void => {
         const { tag } = node
-        const isHost = tag === HostComponent.tag || tag === HostTextComponent.tag
+        const isHost = tag === HostComponent || tag === HostText
 
         if (isHost) {
             const stateNode = node.stateNode

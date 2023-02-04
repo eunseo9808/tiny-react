@@ -1,14 +1,12 @@
 import {ReactComponent} from "./ReactComponent";
-import {WorkTag} from "../types/ReactWorkTags";
+import {HostText, WorkTag, HostComponent as HostTag} from "../types/ReactWorkTags";
 import {ContentReset} from "../types/ReactFiberFlags";
 import {
     appendInitialChild, commitUpdate, createInstance,
     finalizeInitialChildren, prepareUpdate, Props,
     shouldSetTextContent, UpdatePayload
 } from "../../react-dom-binding/ReactDOMHostConfig";
-
-import {HostTextComponent} from "./HostTextComponent";
-import {singleton} from "tsyringe";
+import {container, registry, singleton} from "tsyringe";
 import {Fiber} from "../ReactFiber";
 
 
@@ -19,7 +17,7 @@ export class HostComponent extends ReactComponent {
     appendAllChildren = (parent: Element, workInProgress: Fiber): void => {
         let node: Fiber | null = workInProgress.child
         while (node !== null) {
-            if (node.tag === HostComponent.tag || node.tag === HostTextComponent.tag) {
+            if (node.tag === HostTag || node.tag === HostText) {
                 appendInitialChild(parent, node.stateNode)
             } else if (node.child !== null) {
                 node.child.return = node

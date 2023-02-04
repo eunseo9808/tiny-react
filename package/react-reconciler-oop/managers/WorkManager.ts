@@ -1,24 +1,27 @@
-import {Lane, Lanes, markRootFinished, markRootUpdated, NoLanes, SyncLane} from "./types/ReactFiberLane";
+import {Lane, Lanes, markRootFinished, markRootUpdated, NoLanes, SyncLane} from "../types/ReactFiberLane";
 
-import {MutationMask, NoFlags, PassiveMask} from "./types/ReactFiberFlags";
-import {HostRootComponent} from "./component/HostRootComponent";
+import {MutationMask, NoFlags, PassiveMask} from "../types/ReactFiberFlags";
 import {singleton} from "tsyringe";
 import {BeginWorkManager} from "./BeginWorkManager";
-import {ReactFiberFactory} from "./ReactFiberFactory";
+import {ReactFiberFactory} from "../ReactFiberFactory";
 import {MutationEffectManager} from "./MutationEffectManager";
 import {PassiveEffectManager} from "./PassiveEffectManager";
-import {Scheduler, workLoopSchedule} from "./Scheduler";
-import {getComponent} from "./getComponent";
-import {FiberRoot} from "./ReactFiberRoot";
-import {Fiber} from "./ReactFiber";
+import {Scheduler, workLoopSchedule} from "../Scheduler";
+import {FiberRoot} from "../ReactFiberRoot";
+import {Fiber} from "../ReactFiber";
+import {CompleteWorkManager} from "./CompleteWorkManager";
+import {HostRootComponent} from "../components/HostRootComponent";
+import {HostRoot} from "../types/ReactWorkTags";
 
 @singleton()
 export class WorkManager {
     public constructor(private beginWorkManager?: BeginWorkManager,
+                       private completeWorkManager?: CompleteWorkManager,
                        private reactFiberFactory?: ReactFiberFactory,
                        private mutationEffectManager?: MutationEffectManager,
                        private passiveEffectManager?: PassiveEffectManager,
                        private scheduler?: Scheduler) {
+        workLoopSchedule.current = this.scheduleUpdateOnFiber.bind(this, SyncLane)
     }
 
     workInProgressRoot: FiberRoot | null = null
@@ -38,7 +41,7 @@ export class WorkManager {
 
             const returnFiber: Fiber | null = completedWork.return
 
-            let next = this.completeWork(current, completedWork)
+            let next = this.completeWorkManager.completeWork(current, completedWork)
 
             const siblingFiber = completedWork.sibling
             if (siblingFiber !== null) {
@@ -56,7 +59,7 @@ export class WorkManager {
 
         let next: Fiber | null = null
 
-        next = this.beginWork(current, unitOfWork)
+        next = this.beginWorkManager.beginWork(current, unitOfWork)
         unitOfWork.memoizedProps = unitOfWork.pendingProps
         if (next === null) {
             this.completeUnitOfWork(unitOfWork)
@@ -205,7 +208,7 @@ export class WorkManager {
             parent = node.return
         }
 
-        if (node.tag === HostRootComponent.tag) {
+        if (node.tag === HostRoot) {
             const root: FiberRoot = node.stateNode
             return root
         } else {
@@ -227,37 +230,5 @@ export class WorkManager {
         this.scheduler.scheduleSyncCallback(this.performSyncWorkOnRoot.bind(this, root))
         setTimeout(() => this.scheduler.flushSyncCallbacks(), 0)
         return root
-    }
-
-    beginWork = (
-        current: Fiber | null,
-        workInProgress: Fiber,
-    ): Fiber | null => {
-        if (current !== null) {
-            const oldProps = current.memoizedProps
-            const newProps = workInProgress.pendingProps
-
-            if (oldProps !== newProps) {
-                this.beginWorkManager.didReceiveUpdate = true
-            } else if (workInProgress.lanes !== SyncLane) {
-                this.beginWorkManager.didReceiveUpdate = false
-                return this.beginWorkManager.bailoutOnAlreadyFinishedWork(current, workInProgress)
-            }
-        } else {
-            this.beginWorkManager.didReceiveUpdate = false
-        }
-        workInProgress.lanes = NoLanes
-
-        workLoopSchedule.current = this.scheduleUpdateOnFiber.bind(this, SyncLane)
-
-        return getComponent(workInProgress.tag).updateComponent(current, workInProgress)
-    }
-
-    completeWork = (
-        current: Fiber | null,
-        workInProgress: Fiber
-    ): Fiber | null => {
-        getComponent(workInProgress.tag).completeWork(current, workInProgress)
-        return
     }
 }

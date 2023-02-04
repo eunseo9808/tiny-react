@@ -1,9 +1,9 @@
 import {ReactElement} from "../shared/ReactTypes";
 import {Container} from "../react-dom-binding/shared/ContainerType";
 import {SyncLane} from "./types/ReactFiberLane";
-import {container, inject, injectable, Lifecycle, scoped, singleton} from "tsyringe";
+import {singleton} from "tsyringe";
 import {ReactFiberFactory} from "./ReactFiberFactory";
-import {WorkManager} from "./WorkManager";
+import {WorkManager} from "./managers/WorkManager";
 import {FiberRoot} from "./ReactFiberRoot";
 import {Fiber} from "./ReactFiber";
 

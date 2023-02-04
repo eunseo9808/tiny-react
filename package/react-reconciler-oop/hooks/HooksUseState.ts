@@ -2,18 +2,15 @@ import {NoLanes, SyncLane} from "../types/ReactFiberLane";
 import {singleton} from "tsyringe";
 
 import {BasicStateAction, Dispatch, Hook, Update, UpdateQueue} from "../types/ReactHooksTypes";
-import {BeginWorkManager} from "../BeginWorkManager";
-import { workLoopSchedule } from "../Scheduler";
+import {workLoopSchedule} from "../Scheduler";
 import {Fiber} from "../ReactFiber";
 import {Hooks} from "./Hooks";
 import {hooksContext} from "./hooksContext";
+import {didReceiveUpdate} from "../GlobalVariable";
 
 
 @singleton()
 export class HooksUseState extends Hooks {
-    constructor(private beginWorkManager?: BeginWorkManager) {
-        super();
-    }
 
     basicStateReducer = <S>(state: S, action: BasicStateAction<S>): S => {
         return typeof action === 'function' ? (action as (s: S) => S)(state) : action
@@ -150,7 +147,7 @@ export class HooksUseState extends Hooks {
             }
 
             if (!Object.is(newState, hook.memoizedState)) {
-                this.beginWorkManager.markWorkInProgressReceivedUpdate()
+                didReceiveUpdate.current = true
             }
 
             hook.memoizedState = newState
