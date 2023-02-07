@@ -29,5 +29,6 @@
   },
   "dependencies": {
     "cross-env": "^7.0.3"
-  }
+  },
+  "packageManager": "yarn@3.4.1"
 }
