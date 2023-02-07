@@ -10,7 +10,6 @@ import {Scheduler, workLoopSchedule} from "../Scheduler";
 import {FiberRoot} from "../ReactFiberRoot";
 import {Fiber} from "../ReactFiber";
 import {CompleteWorkManager} from "./CompleteWorkManager";
-import {HostRootComponent} from "../components/HostRootComponent";
 import {HostRoot} from "../types/ReactWorkTags";
 
 @singleton()
