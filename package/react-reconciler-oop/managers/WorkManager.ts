@@ -145,7 +145,6 @@ export class WorkManager {
         const rootHasEffect = (finishedWork.flags & MutationMask) !== NoFlags
 
         if (rootHasEffect || subtreeHasEffects) {
-            this.mutationEffectManager.commitBeforeMutationEffects(root, finishedWork)
             this.mutationEffectManager.commitMutationEffects(root, finishedWork)
 
             root.current = finishedWork

@@ -20,6 +20,10 @@ export function TodoList() {
         setTodos(prev => [...prev, { id: nextTodoId, content: value }])
     }
 
+    useEffect(() => {
+        console.log(nextTodoId)
+    }, [nextTodoId])
+
     return <div>
         Hi This is My Tiny React
         <div>

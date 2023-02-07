@@ -20,62 +20,22 @@ import {Container} from "../../react-dom-binding/shared/ContainerType";
 import {Fiber} from "../ReactFiber";
 import {FiberRoot} from "../ReactFiberRoot";
 import {HostComponent, HostRoot, HostText} from "../types/ReactWorkTags";
+import {ComponentProvider} from "../ComponentProvider";
 
 
 @injectable()
 export class MutationEffectManager {
     nextEffect: Fiber | null = null
 
-    constructor(private commitWorkManager: CommitWorkManager) {
+    constructor(private componentProvider?: ComponentProvider) {
     }
 
-    ensureCorrectReturnPointer = (
+    ensureCorrectReturnPointer(
         fiber: Fiber,
         expectedReturnFiber: Fiber
-    ): void => {
+    ): void {
         fiber.return = expectedReturnFiber
     }
-
-    commitBeforeMutationEffects = (
-        root: FiberRoot,
-        firstChild: Fiber
-    ): void => {
-        this.nextEffect = firstChild
-        this.commitBeforeMutationEffects_begin()
-    }
-
-    commitBeforeMutationEffects_begin = () => {
-        while (this.nextEffect !== null) {
-            const fiber = this.nextEffect
-            const child = fiber.child
-
-            if (
-                (fiber.subtreeFlags & BeforeMutationMask) !== NoFlags &&
-                child !== null
-            ) {
-                this.ensureCorrectReturnPointer(child, fiber)
-                this.nextEffect = child
-            } else {
-                this.commitBeforeMutationEffects_complete()
-            }
-        }
-    }
-
-    commitBeforeMutationEffects_complete = () => {
-        while (this.nextEffect !== null) {
-            const fiber = this.nextEffect
-
-            const sibling = fiber.sibling
-
-            if (sibling !== null) {
-                this.nextEffect = sibling
-                return
-            }
-
-            this.nextEffect = fiber.return
-        }
-    }
-
 
     commitMutationEffects = (
         root: FiberRoot,
@@ -92,12 +52,9 @@ export class MutationEffectManager {
     ): void => {
         const flags = finishedWork.flags
 
-        if (flags & ContentReset) {
-            //todo
-            throw new Error('Not Implement')
-        }
-
         const primaryFlags = flags & (Placement | Update)
+
+        const component = this.componentProvider.getComponent(finishedWork.tag)
 
         switch (primaryFlags) {
             case Placement: {
@@ -105,19 +62,19 @@ export class MutationEffectManager {
                 finishedWork.flags &= ~Placement
                 break
             }
-            case 0: {
+            case NoFlags: {
                 break
             }
             case PlacementAndUpdate: {
                 this.commitPlacement(finishedWork)
                 finishedWork.flags &= ~Placement
                 const current = finishedWork.alternate
-                this.commitWorkManager.commitWork(current, finishedWork)
+                component.commitWork(current, finishedWork)
                 break
             }
             case Update: {
                 const current = finishedWork.alternate
-                this.commitWorkManager.commitWork(current, finishedWork)
+                component.commitWork(current, finishedWork)
                 break
             }
             default: {

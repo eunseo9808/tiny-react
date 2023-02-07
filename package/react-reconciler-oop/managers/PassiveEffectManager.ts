@@ -1,5 +1,5 @@
-import {HasEffect, HookFlags, Passive} from "../types/ReactHookEffectTags";
-import {ChildDeletion, NoFlags, PassiveMask} from "../types/ReactFiberFlags";
+import {HasEffect as HookHasEffect, HookFlags, Passive as HookPassive} from "../types/ReactHookEffectTags";
+import {ChildDeletion, NoFlags, PassiveMask, Passive} from "../types/ReactFiberFlags";
 import {singleton} from "tsyringe";
 import {FunctionComponentUpdateQueue} from "../types/ReactHooksTypes";
 import {FunctionComponent} from "../types/ReactWorkTags";
@@ -52,7 +52,7 @@ export class PassiveEffectManager {
     ): void => {
         switch (current.tag) {
             case FunctionComponent:
-                this.commitHookEffectListUnmount(Passive, current)
+                this.commitHookEffectListUnmount(HookPassive, current)
                 break
             default:
                 break
@@ -173,7 +173,7 @@ export class PassiveEffectManager {
     commitPassiveUnmountEffects_complete = () => {
         while (this.nextEffect !== null) {
             const fiber = this.nextEffect
-            if ((fiber.flags & Passive) !== NoFlags) {
+            if ((fiber.flags & PassiveMask) !== NoFlags) {
                 this.commitPassiveUnmountOnFiber(fiber)
             }
 
@@ -191,7 +191,7 @@ export class PassiveEffectManager {
     commitPassiveUnmountOnFiber = (finishedWork: Fiber): void => {
         switch (finishedWork.tag) {
             case FunctionComponent:
-                this.commitHookEffectListUnmount(HasEffect | Passive, finishedWork)
+                this.commitHookEffectListUnmount(HookHasEffect | HookPassive, finishedWork)
                 break
             default: {
                 console.log('commitPassiveUnmountOnFiber')
@@ -226,7 +226,7 @@ export class PassiveEffectManager {
     ): void => {
         switch (finishedWork.tag) {
             case FunctionComponent:
-                this.commitHookEffectListMount(Passive | HasEffect, finishedWork)
+                this.commitHookEffectListMount(HookPassive | HookHasEffect, finishedWork)
                 break
             default: {
                 console.log('commitPassiveMountOnFiber')
