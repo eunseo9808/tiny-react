@@ -20,6 +20,7 @@
     "babel-loader": "^9.1.2",
     "babel-plugin-transform-typescript-metadata": "^0.3.2",
     "html-webpack-plugin": "^5.5.0",
+    "pnp-webpack-plugin": "^1.7.0",
     "reflect-metadata": "^0.1.13",
     "ts-loader": "^9.4.2",
     "tsyringe": "^4.7.0",
