@@ -8,6 +8,5 @@
     "jsx": "react",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
-  },
-  "exclude": ["node_modules"]
+  }
 }

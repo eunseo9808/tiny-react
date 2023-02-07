@@ -14,12 +14,12 @@ module.exports = {
         rules: [
             {
                 test: /\.js?/,
-                exclude: /node_modules/,
+                exclude: /.yarn/,
                 use: "babel-loader"
             },
             {
                 test: /\.tsx?$/,
-                exclude: /node_module/,
+                exclude: /.yarn/,
                 use: {
                     loader: "ts-loader",
                 },
